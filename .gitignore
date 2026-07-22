@@ -65,6 +65,27 @@ consensus_genes.csv
 mast_all_celltypes*.csv
 *.log
 
+# --- benchmark / analysis harness: NOT part of the DUET tool ---
+# These live in this working folder and produce the validation evidence, but the
+# repo is the DUET library only. Kept on disk, untracked.
+add_mast_and_rebuild.py
+bench_mast_export.py
+bench_mast_report.py
+bench_mast_run.R
+build_crowell_h5ad.py
+build_kang_h5ad.py
+build_sim_h5ad.py
+evaluate_sim.py
+get_crowell.R
+make_heatmaps.py
+make_volcano.py
+null_calibration.py
+rebuild_comparison.py
+rerun_scpyde_rebuild.py
+run_de_comparison.py
+run_mast_dataset.py
+simulate_muscat.R
+
 # --- os / editor noise ---
 .DS_Store
 Thumbs.db
