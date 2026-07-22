@@ -76,6 +76,10 @@ BENCHMARK.hu.md
 # working locally (e.g. for scPipeline.py); not shipped in the library.
 CustomDE/
 
+# --- Phase 2.5 evidence pack (derived; regenerate with collect_evidence.py) ---
+evidence/
+collect_evidence.py
+
 # --- benchmark / analysis harness: NOT part of the DUET tool ---
 # These live in this working folder and produce the validation evidence, but the
 # repo is the DUET library only. Kept on disk, untracked.
