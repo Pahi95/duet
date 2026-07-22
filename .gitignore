@@ -119,3 +119,17 @@ build_docx_data.py
 make_fig1.py
 make_fig2.py
 _render/
+
+# manuscript build tooling (docx renderer) — not part of the library
+node_modules/
+package.json
+package-lock.json
+
+# analysis/benchmark scripts added after the initial push — library only on GitHub
+build_docx_content.py
+evaluate_sim_replicates.py
+null_replicates.py
+simulate_replicates.R
+validate_covariate.R
+validate_covariate.py
+results_sim_reps/

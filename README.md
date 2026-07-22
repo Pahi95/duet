@@ -13,6 +13,12 @@ expression matrix to disk. On 11 106 cells it is **117× faster than R MAST at t
 model fit and 224× end-to-end, in 5.2 GB less memory** — while reproducing MAST's
 coefficients and gene ranking essentially exactly.
 
+> **The speed figures are for the two-group design without covariates**, where DUET
+> takes a fully vectorised closed-form path. Add a covariate and it falls back to
+> per-gene fitting: on one benchmark DUET took 210 s where MAST took 118 s, i.e.
+> **MAST was 1.8× faster**. Accuracy is unaffected — the covariate path reproduces
+> MAST just as closely (log2FC *r* = 0.9994, −log10 p Spearman 0.9998).
+
 > Formerly published in this project as `scPyDE`. Renamed in July 2026 because
 > that name read as "Python SCDE", and [SCDE](https://doi.org/10.1038/nmeth.2967)
 > (Kharchenko et al. 2014) is an established but statistically unrelated method —
@@ -139,17 +145,21 @@ scale gives |log2FC| ≈ 28 for genes detected in only one group — an artefact
 ## Validation
 
 Benchmarked against R MAST 1.33.0, diffxpy, PyDESeq2 and scanpy's Wilcoxon test on
-three datasets — human pancreas (PDAC, 229k cells), [Kang et al. 2018](https://doi.org/10.1038/nbt.4042)
+three datasets — an integrated human pancreas dataset (PDAC, unpublished), [Kang et al. 2018](https://doi.org/10.1038/nbt.4042)
 (PBMC + IFN-β, paired donors) and [Crowell et al. 2020](https://doi.org/10.1038/s41467-020-19894-4)
 (mouse cortex, LPS 4v4) — plus a muscat ground-truth simulation.
 
 **Agreement with R MAST**, identical cells, genes and design (`~1+condition`):
 
-| dataset | log2FC Pearson | sign | −log10p Spearman | top-100 overlap |
-|---|---|---|---|---|
-| Pancreas | 1.000 | 100 % | 0.9999 | 100/100 |
-| Kang 2018 | 1.000 | 100 % | 1.000 | 100/100 |
-| Crowell 4v4 | 1.000 | 100 % | 0.997–1.000 | 98–100/100 |
+| dataset | model | log2FC Pearson | sign | −log10p Spearman | top-100 overlap |
+|---|---|---|---|---|---|
+| Pancreas | `~1+condition` | 1.000 | 100 % | 0.9999 | 100/100 |
+| Kang 2018 | `~1+condition` | 1.000 | 100 % | 1.000 | 100/100 |
+| Crowell 4v4 | `~1+condition` | 1.000 | 100 % | 0.997–1.000 | 98–100/100 |
+| Kang 2018 | **`~1+CDR+condition`** | 0.9994 | 98.9 % | 0.9998 | 100/100 |
+
+The last row exercises the general per-gene path (the vectorised one applies only
+without covariates), so both code paths are validated against MAST.
 
 **Speed** (Ductal cell, ~8.5k genes, same machine):
 
@@ -159,8 +169,10 @@ three datasets — human pancreas (PDAC, 229k cells), [Kang et al. 2018](https:/
 | 11 106 | **1.96 s** | 227.9 s | 438.6 s | 5.2 GB |
 
 Per-cell cost is 0.000072 s for DUET against 0.0188 s for MAST — a factor of 260,
-so the margin widens with dataset size. DUET streams one sparse gene column at a
-time; MAST densifies at ~0.39 MB per cell.
+so the margin widens with population size across the range measured (1 000–11 106
+cells). DUET streams one sparse gene column at a time; MAST densifies at ~0.39 MB
+per cell. Note that cell-level testing runs within a cell type, so the population
+size — not the size of the whole object — is what sets the cost.
 
 ## Limitations — read before reporting gene counts
 
@@ -168,13 +180,22 @@ time; MAST densifies at ~0.39 MB per cell.
 between-sample variance (4v4 samples, 405 true DE genes), at a nominal FDR of
 0.05:
 
-| method | AUC | power | **observed FDR** |
-|---|---:|---:|---:|
-| PyDESeq2 (pseudobulk) | 0.997 | 0.71 | **0.00** |
-| diffxpy | 0.992 | 0.95 | 0.07 |
-| **DUET** | 0.978 | 0.99 | **0.81** |
-| R MAST | 0.978 | 0.99 | **0.80** |
-| Wilcoxon | 0.976 | 0.78 | 0.12 |
+Averaged over **five independent simulation replicates** (a single draw is not
+enough — see the range column):
+
+| method | AUC | power | **observed FDR** | FDR range |
+|---|---:|---:|---:|---:|
+| PyDESeq2 (pseudobulk) | 0.984 ± 0.008 | 0.67 ± 0.04 | **0.000** | 0.000 – 0.000 |
+| **DUET** | 0.981 ± 0.022 | 0.97 ± 0.02 | **0.39 ± 0.38** | **0.047 – 0.873** |
+| R MAST | 0.981 ± 0.022 | 0.97 ± 0.02 | 0.39 ± 0.38 | 0.045 – 0.873 |
+| Wilcoxon | 0.973 ± 0.007 | 0.76 ± 0.09 | 0.08 ± 0.16 | 0.003 – 0.360 |
+
+**The spread is the result.** DUET controlled FDR in two replicates of five (0.047,
+0.072) and failed badly in the others (0.26, 0.70, 0.87) — on data generated the
+same way each time. Cell-level FDR is therefore not uniformly inflated but
+*unpredictable*, which is worse for a practitioner: you cannot tell from one run
+whether your calls are trustworthy. Pseudobulk returned exactly 0.000 every time.
+DUET and MAST tracked each other to within 0.012 in every replicate.
 
 This is not a bug and not specific to DUET — it is the pseudoreplication bias
 described by [Squair et al. 2021](https://doi.org/10.1038/s41467-021-25960-2) and
@@ -199,11 +220,16 @@ How badly depends on the experiment. Splitting the reference samples of each
 dataset at random and asking for differential expression between two groups that
 differ by nothing:
 
-| dataset | DUET | Wilcoxon | PyDESeq2 (pseudobulk) |
-|---|---:|---:|---:|
-| Pancreas (16 donors, separate matrices) | 75–99 % | 33–53 % | **0.00–0.85 %** |
-| Kang 2018 (8 donors, multiplexed pool) | 1–27 % | 0.6–10 % | **0.00 %** |
-| Crowell (4 mice, separate preps) | ~100 % | 6–89 % | **0.00–0.37 %** |
+Repeated over **ten independent random splits per cell type** (90 splits total),
+because a single split turns out to be uninformative — the spread is enormous:
+
+| dataset | DUET mean ± sd | range | Wilcoxon | PyDESeq2 (pseudobulk) |
+|---|---:|---:|---:|---:|
+| Pancreas (16 donors, separate matrices) | 74.6 ± 33.6 % | 1.0–100 % | 30.5 % | **0.13 %** |
+| Kang 2018 (8 donors, multiplexed pool) | **24.6 ± 25.8 %** | 0.9–94.2 % | 7.5 % | **0.02 %** |
+| Crowell (4 mice, separate preps) | 83.4 ± 22.8 % | 33.9–100 % | 37.9 % | **0.09 %** |
+
+**Pseudobulk never exceeded 5 % in any of the 90 splits** (mean 0.08 %, max 2.47 %).
 
 The penalty tracks between-sample *batch* variance, not donor count — Kang has
 half of pancreas's donors and does far better because all its donors were pooled
@@ -262,7 +288,7 @@ the detection component is for.
 
 ## License
 
-Not yet licensed. Until a license is added this is, legally, all rights reserved.
+MIT — see [LICENSE](LICENSE).
 
 ## Status
 
