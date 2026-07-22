@@ -111,3 +111,11 @@ diag_ductal.py
 
 # Manuscript draft (analysis project, not the library)
 MANUSCRIPT.md
+
+# Manuscript build artefacts (analysis project, not the library)
+DUET_manuscript.docx
+build_manuscript_docx.js
+build_docx_data.py
+make_fig1.py
+make_fig2.py
+_render/
