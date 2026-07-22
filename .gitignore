@@ -108,3 +108,6 @@ Thumbs.db
 
 # Ductal permutation-null diagnostic (analysis project, not the library)
 diag_ductal.py
+
+# Manuscript draft (analysis project, not the library)
+MANUSCRIPT.md
