@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# DUET — repository hygiene
+#
+# The working tree carries ~3.4 GB of data and intermediate results. None of it
+# belongs on GitHub: the inputs are public and re-downloadable (see README), and
+# every table here is reproducible from the scripts. What IS tracked from
+# results/ is the small stuff a reader wants without re-running anything:
+# the summaries, the concordance tables, the null/simulation scores, and figures.
+# ---------------------------------------------------------------------------
+
+# --- never, under any circumstances ---
+*codex*
+*Codex*
+*CODEX*
+
+# --- data (public, re-downloadable; see README for provenance) ---
+data/
+*.h5ad
+*.mtx
+*.mtx.gz
+*.rds
+*.tar
+*.loom
+
+# --- benchmark working directories (regenerate with bench_mast_*.py / .R) ---
+bench/
+**/_mast_work/
+_tmp_*/
+
+# --- backups made during the July 2026 refactor ---
+code_backup_*/
+results_backup_*/
+
+# --- exploratory subproject, superseded by the three-dataset comparison ---
+SmallComapre/
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- R ---
+.Rhistory
+.RData
+.Rproj.user/
+
+# --- results: NOT tracked ---
+# Code only for now. Everything under results*/ is derived from data that is
+# either unpublished (the pancreas/PDAC object) or re-downloadable (Kang,
+# Crowell, the muscat simulation), and every table is reproducible from the
+# scripts. Revisit when the preprint goes up.
+results/
+results_kang/
+results_crowell/
+results_sim/
+results_null/
+de_*_all_celltypes.csv
+comparison_per_gene.csv
+consensus_genes.csv
+mast_all_celltypes*.csv
+*.log
+
+# --- os / editor noise ---
+.DS_Store
+Thumbs.db
+*.swp
