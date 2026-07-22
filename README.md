@@ -182,8 +182,18 @@ described by [Squair et al. 2021](https://doi.org/10.1038/s41467-021-25960-2) an
 cells from a handful of donors are not thousands of independent observations, and
 DUET reproduces MAST's behaviour here as faithfully as everywhere else. Under a
 label-permutation null DUET is correctly calibrated (type-I error 0.034–0.059
-against a nominal 0.05); it is the independence assumption that fails, not the
-test.
+across nine dataset × cell-type combinations, nominal 0.05); it is the
+independence assumption that fails, not the test.
+
+A note on how much a single permutation tells you: on pancreas Ductal cells one
+draw (seed 0) gave 0.203. Repeating over ten seeds gives 0.034–0.075 for the other
+nine, mean **0.047** excluding that draw and 0.063 including it, with **zero**
+genes surviving FDR correction in 9/10 seeds. A single permutation is a single
+draw from a null distribution that has real variance, because the cells are not
+exchangeable across donors — quote a mean over seeds, not one run. The residual
+inflation that does exist sits in sparsely detected genes (type-I 0.098 at
+detection rate ~0.18, falling to 0.036 at ~0.68), which is what
+`--duet-min-detect-frac` is for.
 
 How badly depends on the experiment. Splitting the reference samples of each
 dataset at random and asking for differential expression between two groups that
@@ -220,13 +230,22 @@ the detection component is for.
 
 - **The EB statistic saturates at 1373.87.** The empirical-Bayes step clips its
   moderated p-value at `1e-300` before inverting back to a χ²₁ statistic, so the
-  continuous component cannot exceed `chi2.isf(1e-300, 1)`. This affects ~1 % of
-  genes, all astronomically significant either way, and leaves ranking untouched
-  (Spearman 1.0000 against MAST). Fixable with the same log-space technique as
-  `neglog10p`, but it would change p-values and FDR, so it is not applied.
-- Under a permutation null on one cell type (pancreas Ductal) the type-I error is
-  0.203 rather than ~0.05; the other eight dataset × cell-type combinations are
-  0.034–0.059. Unexplained.
+  continuous component cannot exceed `chi2.isf(1e-300, 1)`.
+
+  Measured impact on 11 106 cells: **101 of 8 497 genes (1.19 %)** sit at the cap.
+  Within that set DUET's statistic compresses to 1315–1433 where MAST spans
+  1311–8935, so their relative ordering degrades (Spearman 0.894 within the capped
+  set). Globally the effect is invisible — statistic Spearman against MAST is
+  **0.9999** — and **no capped gene changes significance call** (all remain
+  FDR < 0.05). Practical consequence: if you rank the ~100 most extreme genes by
+  statistic, that ordering is partly arbitrary; every threshold-based result is
+  unaffected.
+
+  Not fixed, and not fixable by the `neglog10p` route: that works because the χ²
+  tail has a closed-form asymptotic, whereas here the input is a moderated
+  *t* statistic and SciPy's `t.logsf` itself underflows to `-inf` above
+  |t| ≈ 40 at these degrees of freedom. A correct fix needs a log-space *t* tail,
+  which would change p-values and FDR.
 
 ## Compatibility
 

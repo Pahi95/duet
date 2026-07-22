@@ -105,3 +105,6 @@ simulate_muscat.R
 .DS_Store
 Thumbs.db
 *.swp
+
+# Ductal permutation-null diagnostic (analysis project, not the library)
+diag_ductal.py
