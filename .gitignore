@@ -65,6 +65,12 @@ consensus_genes.csv
 mast_all_celltypes*.csv
 *.log
 
+# --- the DE_Compare project's own documentation (Hungarian) ---
+# The benchmark write-up with all the validation findings. Belongs to the
+# analysis project, not to the DUET library; README.md in the repo is the
+# library's own English documentation.
+BENCHMARK.hu.md
+
 # --- legacy back-compat shim, removed from the repo by the author ---
 # Kept on disk so the old `from CustomDE.scpyde import run_scpyde` path keeps
 # working locally (e.g. for scPipeline.py); not shipped in the library.
