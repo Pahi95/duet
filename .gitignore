@@ -65,6 +65,11 @@ consensus_genes.csv
 mast_all_celltypes*.csv
 *.log
 
+# --- legacy back-compat shim, removed from the repo by the author ---
+# Kept on disk so the old `from CustomDE.scpyde import run_scpyde` path keeps
+# working locally (e.g. for scPipeline.py); not shipped in the library.
+CustomDE/
+
 # --- benchmark / analysis harness: NOT part of the DUET tool ---
 # These live in this working folder and produce the validation evidence, but the
 # repo is the DUET library only. Kept on disk, untracked.
