@@ -17,6 +17,7 @@ datasets stay comparable.
 """
 from __future__ import annotations
 import argparse
+import os
 from pathlib import Path
 
 import numpy as np
@@ -26,13 +27,14 @@ import anndata as ad
 from scipy.io import mmread
 import scipy.sparse as sp
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
+INPUTS = Path(os.environ.get("DUET_INPUTS", HERE.parent / "inputs"))
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--indir", default=str(HERE / "data" / "crowell"))
-    ap.add_argument("--out", default=str(HERE / "data" / "crowell_4vs4.h5ad"))
+    ap.add_argument("--indir", default=str(INPUTS / "data" / "crowell"))
+    ap.add_argument("--out", default=str(INPUTS / "data" / "crowell_4vs4.h5ad"))
     a = ap.parse_args()
     d = Path(a.indir)
 

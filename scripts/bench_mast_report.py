@@ -31,7 +31,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
 BENCH = HERE / "bench"
 LN2 = np.log(2.0)
 DUET_C, MAST_C = "#b64b34", "#2b6685"

@@ -25,8 +25,9 @@ import scipy.sparse as sp
 from scipy.io import mmwrite
 import scanpy as sc
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
+INPUTS = Path(os.environ.get("DUET_INPUTS", HERE.parent / "inputs"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ for sibling imports
 from duet import run_duet                       # noqa: E402
 from duet.core import _compute_cdr              # noqa: E402
 
@@ -51,7 +52,7 @@ def time_duet(A, engine, ref, test, reps):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--h5ad", default=str(HERE / "data" / "kang_8donors.h5ad"))
+    ap.add_argument("--h5ad", default=str(INPUTS / "data" / "kang_8donors.h5ad"))
     ap.add_argument("--celltype", default="CD14+ Monocytes")
     ap.add_argument("--ref", default="ctrl")
     ap.add_argument("--test", default="stim")

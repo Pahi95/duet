@@ -33,8 +33,9 @@ import scipy.sparse as sp
 
 warnings.filterwarnings("ignore")
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))  # so `from duet import ...` works
+HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
+INPUTS = Path(os.environ.get("DUET_INPUTS", HERE.parent / "inputs"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ for sibling imports  # so `from duet import ...` works
 
 COMPARISON = "Reference_vs_pancreas"
 HARMON = ["method", "celltype", "comparison", "gene", "pvalue", "fdr", "log2fc",
@@ -502,7 +503,7 @@ def build_comparison(all_df, *, fdr_thr, top_k, out_dir):
 # --------------------------------------------------------------------------- #
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Compare single-cell DE methods on the same data.")
-    ap.add_argument("--h5ad", default=str(HERE / "PancreasIntegratedAnnotated.h5ad"))
+    ap.add_argument("--h5ad", default=str(INPUTS / "PancreasIntegratedAnnotated.h5ad"))
     ap.add_argument("--output-dir", default=str(HERE / "results"))
     ap.add_argument("--celltypes", default=None, help="Comma-separated; default = auto-pick balanced.")
     ap.add_argument("--n-celltypes", type=int, default=3)

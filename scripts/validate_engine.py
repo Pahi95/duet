@@ -24,8 +24,8 @@ import pandas as pd
 import scanpy as sc
 
 warnings.filterwarnings("ignore")
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ for sibling imports
 from duet import run_duet                       # noqa: E402
 
 ENGINES = ("statsmodels", "numpy_irls")

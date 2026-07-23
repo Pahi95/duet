@@ -296,6 +296,8 @@ the detection component is for.
 pytest tests/ -q
 ```
 
+Analysis and benchmark scripts live in `scripts/`; the library is `duet/`.
+
 24 tests covering the underflow-safe tail against SciPy, BH correctness, the
 logistic engine (including separation), and end-to-end invariants — that the
 vectorised and general code paths give the same answer, that `neglog10p` stays

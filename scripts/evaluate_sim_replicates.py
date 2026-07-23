@@ -27,9 +27,9 @@ import scipy.sparse as sp
 from scipy.io import mmread, mmwrite
 from sklearn.metrics import roc_auc_score
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
 INPUTS = Path(os.environ.get("DUET_INPUTS", HERE.parent / "inputs"))
-sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ for sibling imports
 import run_de_comparison as R          # noqa: E402
 
 TRUE_DE = {"de", "dp", "dm", "db"}

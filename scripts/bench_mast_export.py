@@ -25,6 +25,7 @@ duet_results.csv
 """
 from __future__ import annotations
 import argparse, json, time, sys
+import os
 from pathlib import Path
 
 import numpy as np
@@ -33,14 +34,15 @@ import scipy.sparse as sp
 from scipy.io import mmwrite
 import anndata as ad
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
+HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
+INPUTS = Path(os.environ.get("DUET_INPUTS", HERE.parent / "inputs"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ for sibling imports
 import run_de_comparison as R          # noqa: E402  (reuse the harmonized runner)
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--h5ad", default=str(HERE / "PancreasIntegratedAnnotated.h5ad"))
+    ap.add_argument("--h5ad", default=str(INPUTS / "PancreasIntegratedAnnotated.h5ad"))
     ap.add_argument("--celltype", default="Ductal cell")
     # Ductal is the only cell type in this object with a balanced two-arm split
     # at scale (5,865 vs 5,241); Endocrine is 44,764 vs 491 and the rest are

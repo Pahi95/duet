@@ -11,13 +11,16 @@ suppressPackageStartupMessages({
   library(muscData); library(ExperimentHub)
 })
 
+# Primary data lives outside the checkout (see README). Resolve it the same
+# way the Python scripts do, so both agree on where replicates are written.
+inputs <- Sys.getenv("DUET_INPUTS", unset = file.path("..", "..", "inputs"))
 args <- commandArgs(trailingOnly = TRUE)
 nrep <- if (length(args) >= 1) as.integer(args[1]) else 5L
 ng   <- if (length(args) >= 2) as.integer(args[2]) else 4000L
 nc   <- if (length(args) >= 3) as.integer(args[3]) else 24000L
 ns   <- if (length(args) >= 4) as.integer(args[4]) else 4L
 
-cache <- file.path("data", "sim_ref_prepped.rds")
+cache <- file.path(inputs, "data", "sim_ref_prepped.rds")
 if (file.exists(cache)) {
   cat("[sim] loading cached prepSim reference\n")
   ref <- readRDS(cache)
@@ -33,7 +36,7 @@ p_dd <- c(0.80, 0.10, 0.025, 0.025, 0.025, 0.025)   # ee, ep, de, dp, dm, db
 
 for (r in seq_len(nrep)) {
   seed <- 100L + r
-  outdir <- file.path("data", sprintf("sim_rep%02d", r))
+  outdir <- file.path(inputs, "data", sprintf("sim_rep%02d", r))
   dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
   if (file.exists(file.path(outdir, "counts.mtx"))) {
     cat(sprintf("[sim] rep %d already present, skipping\n", r)); next
