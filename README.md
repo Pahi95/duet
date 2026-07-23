@@ -11,7 +11,9 @@ piece.
 It works directly on sparse `AnnData`, with no R toolchain and no writing the
 expression matrix to disk. On 11 106 cells it is **117× faster than R MAST at the
 model fit and 224× end-to-end, in 5.2 GB less memory** — while reproducing MAST's
-coefficients and gene ranking essentially exactly.
+coefficients and gene ranking essentially exactly. The margin grows with population
+size, reaching **149× at the fit and 282× end-to-end at 23 895 cells**, because
+MAST is linear in cells where DUET is nearly flat.
 
 > **The speed figures are for the two-group design without covariates**, where DUET
 > takes a fully vectorised closed-form path. Add a covariate and there is no closed
@@ -162,18 +164,25 @@ three datasets — an integrated human pancreas dataset (PDAC, unpublished), [Ka
 The last row exercises the general per-gene path (the vectorised one applies only
 without covariates), so both code paths are validated against MAST.
 
-**Speed** (Ductal cell, ~8.5k genes, same machine):
+**Speed**, ~8 000 genes throughout, same machine. The Ductal series is the largest
+single cell type with a balanced two-group split; the pooled series (Ductal +
+Endothelial + Stellate) carries the same measurement further. Both are cost
+benchmarks — the pooled arms differ in composition, so no agreement statistic is
+taken from them.
 
-| cells | DUET | R MAST (fit) | R MAST (end-to-end) | MAST peak RAM |
-|---:|---:|---:|---:|---:|
-| 1 000 | 1.19 s | 28.1 s | 55.0 s | 1.2 GB |
-| 11 106 | **1.96 s** | 227.9 s | 438.6 s | 5.2 GB |
+| population | cells | DUET | R MAST (fit) | R MAST (e2e) | speed-up (e2e) | MAST peak RAM |
+|---|---:|---:|---:|---:|---:|---:|
+| Ductal | 1 000 | 1.19 s | 28.1 s | 55.0 s | 46× | 1.2 GB |
+| Ductal | 11 106 | **1.96 s** | 227.9 s | 438.6 s | 224× | 5.2 GB |
+| pooled | 2 500 | 1.80 s | 54.4 s | 101.2 s | 56× | 1.7 GB |
+| pooled | 10 000 | 2.34 s | 215.3 s | 409.4 s | 175× | 4.4 GB |
+| pooled | **23 895** | **3.36 s** | 499.9 s | 947.9 s | **282×** | 9.4 GB |
 
-Per-cell cost is 0.000072 s for DUET against 0.0188 s for MAST — a factor of 260,
-so the margin widens with population size across the range measured (1 000–11 106
-cells). DUET streams one sparse gene column at a time; MAST densifies at ~0.39 MB
-per cell. Note that cell-level testing runs within a cell type, so the population
-size — not the size of the whole object — is what sets the cost.
+Per-cell cost is 0.000072 s for DUET against ~0.02 s for MAST, reproduced
+independently on both populations. MAST's peak memory is linear at **0.368 MB per
+cell (r² = 1.0000)**; DUET streams one sparse gene column at a time, so its
+footprint stays flat. Note that cell-level testing runs within a cell type, so the
+population size — not the size of the whole object — is what sets the cost.
 
 ## Limitations — read before reporting gene counts
 
@@ -273,6 +282,18 @@ the detection component is for.
   *t* statistic and SciPy's `t.logsf` itself underflows to `-inf` above
   |t| ≈ 40 at these degrees of freedom. A correct fix needs a log-space *t* tail,
   which would change p-values and FDR.
+
+## Tests
+
+```bash
+pytest tests/ -q
+```
+
+18 tests covering the underflow-safe tail against SciPy, BH correctness, the
+logistic engine (including separation), and end-to-end invariants — that the
+vectorised and general code paths give the same answer, that a pure
+detection-rate change is detected, and that null data stays calibrated. Run on
+Python 3.10 and 3.12 by GitHub Actions.
 
 ## Compatibility
 

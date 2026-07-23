@@ -84,9 +84,6 @@ collect_evidence.py
 # These live in this working folder and produce the validation evidence, but the
 # repo is the DUET library only. Kept on disk, untracked.
 add_mast_and_rebuild.py
-bench_mast_export.py
-bench_mast_report.py
-bench_mast_run.R
 build_kang_h5ad.py
 build_sim_h5ad.py
 evaluate_sim.py
