@@ -229,3 +229,71 @@ def test_back_compat_aliases_exist():
     import duet
     for name in ("run_duet", "run_duet_cnv", "run_scpyde", "run_python_hurdle_de"):
         assert hasattr(duet, name), f"{name} disappeared from the public API"
+
+
+# --------------------------------------------------------------------------
+# quasi-separation: the coefficient has no MLE, but the LRT is still valid
+# --------------------------------------------------------------------------
+
+def test_is_separated_is_exact_not_heuristic():
+    from duet.core import _is_separated
+    cond = np.r_[np.zeros(50), np.ones(50)]
+    assert _is_separated(np.r_[np.ones(50), np.zeros(50)], cond)      # 100% / 0%
+    assert _is_separated(np.r_[np.ones(50), np.r_[np.ones(25),
+                                                  np.zeros(25)]], cond)  # 100% / 50%
+    assert not _is_separated(np.r_[np.ones(30), np.zeros(20),
+                                   np.ones(10), np.zeros(40)], cond)     # 60% / 20%
+
+
+def _separated_toy(tmp_path, seed=3):
+    """One gene detected in 100% of the reference arm -- quasi-separation."""
+    import anndata as ad
+    import pandas as pd
+    import scipy.sparse as sp
+    rng = np.random.default_rng(seed)
+    n, g = 400, 30
+    half = n // 2
+    X = (rng.random((n, g)) < 0.5) * rng.lognormal(1.5, 0.5, (n, g))
+    X[:half, 0] = rng.lognormal(1.5, 0.5, half)      # ref: every cell detects
+    X[half:, 0] = (rng.random(half) < 0.6) * rng.lognormal(1.5, 0.5, half)
+    obs = pd.DataFrame({"celltype": "T",
+                        "Sample": ["ctrl"] * half + ["stim"] * half},
+                       index=[f"c{i}" for i in range(n)])
+    return ad.AnnData(X=sp.csr_matrix(X), obs=obs,
+                      var=pd.DataFrame(index=[f"g{j}" for j in range(g)]))
+
+
+def test_separated_gene_is_flagged(tmp_path):
+    a = _separated_toy(tmp_path)
+    d = _run(a, tmp_path, covariates=("CDR",), mast_compat=False).set_index("gene")
+    assert bool(d.loc["g0", "detection_separated"]) is True
+    assert d.loc["g0", "detect_rate_ref"] == 1.0
+    # the rest of the genes have interior detection rates and must not be flagged
+    others = d.drop(index="g0")
+    assert not others["detection_separated"].fillna(False).any()
+
+
+def test_separation_does_not_invalidate_the_test(tmp_path):
+    """The LRT and p-value stay finite and usable under separation; only the
+    coefficient is undefined. A NaN statistic here would be a regression."""
+    a = _separated_toy(tmp_path)
+    d = _run(a, tmp_path, covariates=("CDR",), mast_compat=False).set_index("gene")
+    r = d.loc["g0"]
+    assert bool(r["tested"]) is True
+    assert np.isfinite(r["stat_hurdle"]) and r["stat_hurdle"] > 0
+    assert np.isfinite(r["neglog10p"])
+
+
+def test_engines_agree_on_separated_genes(tmp_path):
+    """Regression test for a real bug: separation used to be diagnosed from
+    |beta| > 25, so the two engines took DIFFERENT tests on the same gene
+    depending on where their iteration stopped (|beta| 24.6 vs 27.1)."""
+    a = _separated_toy(tmp_path)
+    sm = _run(a, tmp_path / "sm", covariates=("CDR",), mast_compat=False,
+              logistic_engine="statsmodels").set_index("gene")
+    ni = _run(a, tmp_path / "ni", covariates=("CDR",), mast_compat=False,
+              logistic_engine="numpy_irls").set_index("gene")
+    m = (sm.tested == True) & (ni.reindex(sm.index).tested == True)   # noqa: E712
+    assert np.allclose(sm.loc[m, "stat_hurdle"],
+                       ni.reindex(sm.index).loc[m, "stat_hurdle"],
+                       rtol=1e-6, atol=1e-6)

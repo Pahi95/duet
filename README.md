@@ -113,6 +113,7 @@ One row per gene per cell type:
 | `stat_detect`, `stat_continuous`, `stat_hurdle` | the two components and their sum |
 | `p_detect`, `p_continuous` | per-component p-values |
 | `detect_rate_ref/test`, `mean_expr_ref/test` | descriptive counts |
+| `detection_separated` | a group detects the gene in exactly 0 % or 100 % of cells — the test is valid, the **coefficient is not** |
 | `tested`, `skip_reason` | why a gene was or was not tested |
 
 ### Rank on `neglog10p`, not `pvalue`

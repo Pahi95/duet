@@ -152,6 +152,10 @@ HURDLE_OUTPUT_COLUMNS = [
     "n_positive_test",
     "detect_rate_ref",
     "detect_rate_test",
+    # True when a group's detection rate is exactly 0 or 1: the LRT and p-value
+    # remain valid, but the condition COEFFICIENT has no finite MLE. Filter on
+    # this before using `coef` / log2FC from such genes.
+    "detection_separated",
     "mean_expr_ref",
     "mean_expr_test",
     # --- grouping / provenance ---
@@ -345,11 +349,31 @@ def _logit_statsmodels(X: np.ndarray, y: np.ndarray):
         return None
 
 
+def _is_separated(y_detect, cond01) -> bool:
+    """Deterministic quasi-separation check on the two-group detection margins.
+
+    A gene detected in exactly 0% or 100% of either condition group has no finite
+    maximum-likelihood estimate for the condition coefficient: the fitted
+    probability must reach 0 or 1, so the linear predictor diverges. This is a
+    property of the DATA and is decidable exactly, unlike the magnitude of a
+    coefficient that has been stopped mid-divergence by an iteration cap.
+    """
+    for g in (0, 1):
+        m = cond01 == g
+        if not m.any():
+            continue
+        r = float(y_detect[m].mean())
+        if r == 0.0 or r == 1.0:
+            return True
+    return False
+
+
 def _detection_lrt(X_full, X_null, y_detect, n_cond_cols, engine, fallback, cond01):
     """Detection-component LRT.
 
     Returns (stat, df, pvalue, status) where status is one of:
-    'ok', 'constant' (no detection variation -> 0 df), 'fallback', 'failed'.
+    'ok', 'separated' (LRT valid, coefficient not), 'constant' (no detection
+    variation -> 0 df), 'fallback', 'failed'.
     """
     s = float(y_detect.sum())
     n = y_detect.size
@@ -362,14 +386,30 @@ def _detection_lrt(X_full, X_null, y_detect, n_cond_cols, engine, fallback, cond
     rf = fit(X_full, y_detect)
     rn = fit(X_null, y_detect)
 
+    # Separation is diagnosed from the data, not from |beta|. The previous rule
+    # ("separated" iff |beta| > 25 or the fit did not converge) made the choice
+    # between two DIFFERENT tests -- the covariate-adjusted LRT and the 2x2
+    # contingency fallback -- turn on which side of an arbitrary threshold a
+    # divergent coefficient happened to stop. The engines disagreed for exactly
+    # that reason: on the same genes numpy_irls reached |beta| 27.1 and fell back
+    # while statsmodels stopped at 24.6 and did not.
+    #
+    # Under quasi-separation the coefficient diverges but the LIKELIHOOD RATIO
+    # still converges, and both engines return the same statistic to within
+    # 1e-4. So the LRT is kept whenever the log-likelihoods are finite; only a
+    # genuinely failed fit falls back. The gene is reported as separated so that
+    # its `coef` -- which IS meaningless here -- can be filtered downstream.
+    separated = _is_separated(y_detect, cond01)
     good = (
         rf is not None
         and rn is not None
-        and not rf.get("separated", False)
-        and not rn.get("separated", False)
         and np.isfinite(rf["llf"])
         and np.isfinite(rn["llf"])
     )
+    if good and separated:
+        stat = max(0.0, 2.0 * (rf["llf"] - rn["llf"]))
+        df = int(n_cond_cols)
+        return stat, df, float(chi2.sf(stat, df)) if df > 0 else np.nan, "separated"
     if good:
         stat = max(0.0, 2.0 * (rf["llf"] - rn["llf"]))
         df = int(n_cond_cols)
@@ -566,6 +606,7 @@ def _blank_row(gene, ct, comparison, ref_label, test_label):
         tested=False,
         skip_reason="",
         method=METHOD_NAME,
+        detection_separated=False,   # a NaN here would read as "maybe"
     )
     return row
 
@@ -631,6 +672,7 @@ def _fit_one_gene(col, ctx) -> dict:
         ctx["X_full_det"], ctx["X_null_det"], y_detect,
         ctx["n_cond_cols"], ctx["logistic_engine"], ctx["detection_fallback"], cond01,
     )
+    row["detection_separated"] = bool(status_d == "separated")
     if status_d == "failed":
         if not partial:
             row["skip_reason"] = SKIP_SEPARATION
@@ -1046,6 +1088,10 @@ def _fit_celltype_vectorized(
         "n_positive_test": cpt.astype(np.int64),
         "detect_rate_ref": cpr / n_ref,
         "detect_rate_test": cpt / n_test,
+        # The vectorised path uses an exact two-group G-test, so separation is
+        # handled correctly here rather than being a failure mode -- but the
+        # condition coefficient is still undefined, so flag it identically.
+        "detection_separated": (cpr == 0) | (cpr == n_ref) | (cpt == 0) | (cpt == n_test),
         "mean_expr_ref": mean_expr_ref,
         "mean_expr_test": mean_expr_test,
         "celltype": celltype,
@@ -1451,6 +1497,11 @@ def run_python_hurdle_de(
     detection_fallback : {'chisq','fisher','none'}
         Fallback for the detection component when the covariate-adjusted
         logistic fit fails or shows perfect separation.
+    detection_separated : output column
+        True when a condition group's detection rate is exactly 0 or 1. The
+        likelihood-ratio test and its p-value remain valid there, but the
+        condition COEFFICIENT has no finite maximum-likelihood estimate, so
+        ``coef`` / log2FC for such genes should be filtered before use.
     logistic_engine : {'numpy_irls','statsmodels'}
         Engine for the detection GLM on the covariate path (the vectorised
         two-group path does not fit a GLM at all). Default ``numpy_irls``:
