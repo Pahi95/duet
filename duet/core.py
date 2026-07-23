@@ -1402,7 +1402,7 @@ def run_python_hurdle_de(
     *,
     condition_col=None,
     detection_fallback="chisq",
-    logistic_engine="statsmodels",
+    logistic_engine="numpy_irls",
     assume_logged=None,
     comparison=None,
     emit_skipped_celltypes=False,
@@ -1451,8 +1451,17 @@ def run_python_hurdle_de(
     detection_fallback : {'chisq','fisher','none'}
         Fallback for the detection component when the covariate-adjusted
         logistic fit fails or shows perfect separation.
-    logistic_engine : {'statsmodels','numpy_irls'}
-        Engine for the detection GLM. ``numpy_irls`` is faster at scale.
+    logistic_engine : {'numpy_irls','statsmodels'}
+        Engine for the detection GLM on the covariate path (the vectorised
+        two-group path does not fit a GLM at all). Default ``numpy_irls``:
+        statsmodels' GLM accounted for ~78% of covariate-path runtime and
+        ``numpy_irls`` is 2.8-4.4x faster for the same fit. Agreement is exact
+        except under quasi-separation -- a gene detected in 100% (or 0%) of one
+        group, where the maximum-likelihood estimate does not exist and the two
+        solvers stop at different points. Measured across three datasets that
+        affected 3 of 76,955 gene-by-cell-type tests, all in a 100-cell
+        population (significant-call Jaccard 0.9998). Set ``statsmodels`` to
+        reproduce results published before this default changed.
     assume_logged : bool | None
         ``None`` auto-detects unlogged data (max>100) and applies log1p.
     comparison : str | None
@@ -1579,7 +1588,7 @@ def run_python_hurdle_cnv(
     output_prefix="python_hurdle_cnv",
     *,
     detection_fallback="chisq",
-    logistic_engine="statsmodels",
+    logistic_engine="numpy_irls",
     assume_logged=None,
     emit_skipped_celltypes=False,
     output_format="csv",

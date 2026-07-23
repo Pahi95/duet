@@ -126,10 +126,11 @@ package-lock.json
 # analysis/benchmark scripts added after the initial push — library only on GitHub
 build_docx_content.py
 null_replicates.py
-validate_covariate.R
-validate_covariate.py
 results_sim_reps/
 
+# NOTE: the scripts backing the reproducibility and validation claims in the
+# paper are deliberately TRACKED -- the covariate timing/agreement figures and
+# the engine-equivalence result are all quoted in the manuscript.
 # NOTE: the four scripts backing the reproducibility claim in the paper
 # (build_crowell_h5ad.py, simulate_replicates.R, evaluate_sim_replicates.py
 # and run_de_comparison.py, which the evaluator imports) are deliberately
