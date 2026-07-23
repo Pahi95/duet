@@ -1,0 +1,137 @@
+# ---------------------------------------------------------------------------
+# DUET — repository hygiene
+#
+# The working tree carries ~3.4 GB of data and intermediate results. None of it
+# belongs on GitHub: the inputs are public and re-downloadable (see README), and
+# every table here is reproducible from the scripts. What IS tracked from
+# results/ is the small stuff a reader wants without re-running anything:
+# the summaries, the concordance tables, the null/simulation scores, and figures.
+# ---------------------------------------------------------------------------
+
+# --- data (public, re-downloadable; see README for provenance) ---
+data/
+*.h5ad
+*.mtx
+*.mtx.gz
+*.rds
+*.tar
+*.loom
+
+# --- benchmark working directories (regenerate with bench_mast_*.py / .R) ---
+bench/
+**/_mast_work/
+_tmp_*/
+
+# --- backups made during the July 2026 refactor ---
+code_backup_*/
+results_backup_*/
+
+# --- exploratory subproject, superseded by the three-dataset comparison ---
+SmallComapre/
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- R ---
+.Rhistory
+.RData
+.Rproj.user/
+
+# --- results: NOT tracked ---
+# Code only for now. Everything under results*/ is derived from data that is
+# either unpublished (the pancreas/PDAC object) or re-downloadable (Kang,
+# Crowell, the muscat simulation), and every table is reproducible from the
+# scripts. Revisit when the preprint goes up.
+results/
+results_kang/
+results_crowell/
+results_sim/
+results_null/
+de_*_all_celltypes.csv
+comparison_per_gene.csv
+consensus_genes.csv
+mast_all_celltypes*.csv
+*.log
+
+# --- the DE_Compare project's own documentation (Hungarian) ---
+# The benchmark write-up with all the validation findings. Belongs to the
+# analysis project, not to the DUET library; README.md in the repo is the
+# library's own English documentation.
+BENCHMARK.hu.md
+
+# --- legacy back-compat shim, removed from the repo by the author ---
+# Kept on disk so the old `from CustomDE.scpyde import run_scpyde` path keeps
+# working locally (e.g. for scPipeline.py); not shipped in the library.
+CustomDE/
+
+# --- Phase 2.5 evidence pack (derived; regenerate with collect_evidence.py) ---
+evidence/
+collect_evidence.py
+
+# --- benchmark / analysis harness: NOT part of the DUET tool ---
+# These live in this working folder and produce the validation evidence, but the
+# repo is the DUET library only. Kept on disk, untracked.
+add_mast_and_rebuild.py
+build_kang_h5ad.py
+build_sim_h5ad.py
+evaluate_sim.py
+get_crowell.R
+make_heatmaps.py
+make_volcano.py
+null_calibration.py
+rebuild_comparison.py
+rerun_scpyde_rebuild.py
+run_mast_dataset.py
+simulate_muscat.R
+
+# --- os / editor noise ---
+.DS_Store
+Thumbs.db
+*.swp
+
+# Ductal permutation-null diagnostic (analysis project, not the library)
+diag_ductal.py
+
+# Manuscript draft (analysis project, not the library)
+MANUSCRIPT.md
+
+# Manuscript build artefacts (analysis project, not the library)
+DUET_manuscript.docx
+build_manuscript_docx.js
+build_docx_data.py
+make_fig1.py
+make_fig2.py
+_render/
+
+# manuscript build tooling (docx renderer) — not part of the library
+node_modules/
+package.json
+package-lock.json
+
+# analysis/benchmark scripts added after the initial push — library only on GitHub
+build_docx_content.py
+null_replicates.py
+results_sim_reps/
+
+# NOTE: the scripts backing the reproducibility and validation claims in the
+# paper are deliberately TRACKED -- the covariate timing/agreement figures and
+# the engine-equivalence result are all quoted in the manuscript.
+# NOTE: the four scripts backing the reproducibility claim in the paper
+# (build_crowell_h5ad.py, simulate_replicates.R, evaluate_sim_replicates.py
+# and run_de_comparison.py, which the evaluator imports) are deliberately
+# TRACKED. Do not re-add them here.
+
+# coverage / build artefacts
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+build/
+dist/
