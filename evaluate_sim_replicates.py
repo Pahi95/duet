@@ -28,6 +28,7 @@ from scipy.io import mmread, mmwrite
 from sklearn.metrics import roc_auc_score
 
 HERE = Path(__file__).resolve().parent
+INPUTS = Path(os.environ.get("DUET_INPUTS", HERE.parent / "inputs"))
 sys.path.insert(0, str(HERE))
 import run_de_comparison as R          # noqa: E402
 
@@ -91,7 +92,7 @@ def main():
     out = Path(a.outdir); out.mkdir(parents=True, exist_ok=True)
     methods = [m.strip() for m in a.methods.split(",") if m.strip()]
 
-    reps = sorted(HERE.glob("data/sim_rep*"))
+    reps = sorted(INPUTS.glob("data/sim_rep*"))
     if not reps:
         raise SystemExit("no data/sim_rep*/ directories — run simulate_replicates.R first")
     print(f"[eval] {len(reps)} replicates: {[r.name for r in reps]}")
