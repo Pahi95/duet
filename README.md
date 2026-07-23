@@ -14,10 +14,11 @@ model fit and 224× end-to-end, in 5.2 GB less memory** — while reproducing MA
 coefficients and gene ranking essentially exactly.
 
 > **The speed figures are for the two-group design without covariates**, where DUET
-> takes a fully vectorised closed-form path. Add a covariate and it falls back to
-> per-gene fitting: on one benchmark DUET took 210 s where MAST took 118 s, i.e.
-> **MAST was 1.8× faster**. Accuracy is unaffected — the covariate path reproduces
-> MAST just as closely (log2FC *r* = 0.9994, −log10 p Spearman 0.9998).
+> takes a fully vectorised closed-form path. Add a covariate and there is no closed
+> form, so it fits each gene iteratively: DUET takes 78 s where MAST's fit and test
+> take 57 s, i.e. **MAST is ~1.4× faster on that path**. Accuracy is unaffected —
+> the covariate path reproduces MAST just as closely (log2FC *r* = 0.9994,
+> −log10 p Spearman 0.9998).
 
 > Formerly published in this project as `scPyDE`. Renamed in July 2026 because
 > that name read as "Python SCDE", and [SCDE](https://doi.org/10.1038/nmeth.2967)
@@ -276,6 +277,14 @@ the detection component is for.
 ## Compatibility
 
 `run_scpyde` and `run_python_hurdle_de` remain as aliases for `run_duet`.
+
+**`logistic_engine` now defaults to `"numpy_irls"`** (it was `"statsmodels"`). This
+affects only runs *with covariates* — the vectorised two-group path fits no GLM at
+all. It is 2.8–4.4× faster for the same fit, and agreement is exact on 80,947 of
+80,950 gene-by-cell-type tests measured across three datasets. The three exceptions
+are genes detected in exactly 100% of one group, where the maximum-likelihood
+estimate does not exist and no solver is correct. Pass
+`logistic_engine="statsmodels"` to reproduce results generated before this change.
 
 ## References
 
