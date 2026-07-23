@@ -504,7 +504,7 @@ def build_comparison(all_df, *, fdr_thr, top_k, out_dir):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Compare single-cell DE methods on the same data.")
     ap.add_argument("--h5ad", default=str(INPUTS / "PancreasIntegratedAnnotated.h5ad"))
-    ap.add_argument("--output-dir", default=str(HERE / "results"))
+    ap.add_argument("--output-dir", default=str(HERE / "results" / "pancreas"))
     ap.add_argument("--celltypes", default=None, help="Comma-separated; default = auto-pick balanced.")
     ap.add_argument("--n-celltypes", type=int, default=3)
     ap.add_argument("--celltype-col", default="celltype")

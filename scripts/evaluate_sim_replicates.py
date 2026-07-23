@@ -87,7 +87,7 @@ def main():
     ap.add_argument("--methods", default="duet,deseq2,wilcoxon")
     ap.add_argument("--mast", action="store_true", default=True)
     ap.add_argument("--no-mast", dest="mast", action="store_false")
-    ap.add_argument("--outdir", default=str(HERE / "results_sim_reps"))
+    ap.add_argument("--outdir", default=str(HERE / "results" / "sim_reps"))
     a = ap.parse_args()
     out = Path(a.outdir); out.mkdir(parents=True, exist_ok=True)
     methods = [m.strip() for m in a.methods.split(",") if m.strip()]
