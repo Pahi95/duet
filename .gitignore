@@ -87,7 +87,6 @@ add_mast_and_rebuild.py
 bench_mast_export.py
 bench_mast_report.py
 bench_mast_run.R
-build_crowell_h5ad.py
 build_kang_h5ad.py
 build_sim_h5ad.py
 evaluate_sim.py
@@ -97,7 +96,6 @@ make_volcano.py
 null_calibration.py
 rebuild_comparison.py
 rerun_scpyde_rebuild.py
-run_de_comparison.py
 run_mast_dataset.py
 simulate_muscat.R
 
@@ -127,9 +125,12 @@ package-lock.json
 
 # analysis/benchmark scripts added after the initial push — library only on GitHub
 build_docx_content.py
-evaluate_sim_replicates.py
 null_replicates.py
-simulate_replicates.R
 validate_covariate.R
 validate_covariate.py
 results_sim_reps/
+
+# NOTE: the four scripts backing the reproducibility claim in the paper
+# (build_crowell_h5ad.py, simulate_replicates.R, evaluate_sim_replicates.py
+# and run_de_comparison.py, which the evaluator imports) are deliberately
+# TRACKED. Do not re-add them here.
