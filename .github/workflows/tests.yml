@@ -12,9 +12,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 3.12 is the version all reported results were produced with; 3.10 is
-        # tested so the lower bound is a measurement rather than an assumption.
-        python-version: ["3.10", "3.12"]
+        # 3.12 is the version all reported results were produced with. 3.11 is
+        # the floor, set by anndata >= 0.12 rather than by anything in DUET --
+        # a 3.10 job cannot resolve its dependencies at all.
+        python-version: ["3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +28,10 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install numpy scipy pandas anndata scikit-learn pytest
+          pip install -e ".[test]"
+
+      - name: Import check (no optional extras installed)
+        run: python -c "import duet; print(duet.__version__)"
 
       - name: Run tests
         run: pytest tests/ -q

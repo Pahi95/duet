@@ -64,15 +64,23 @@ variance moderation of the continuous component is on by default under
 
 ## Install
 
-No package on PyPI yet. Clone and put the repository on your path:
-
 ```bash
 git clone https://github.com/Pahi95/duet.git
 cd duet
-pip install numpy scipy pandas anndata scanpy      # tqdm, psutil optional
+pip install -e .
 ```
 
-Tested with Python 3.12, NumPy 2.0, SciPy 1.14, AnnData 0.12.
+Requires **Python ≥ 3.11** — that floor comes from `anndata`, not from DUET,
+whose engine imports only NumPy, SciPy and pandas. Optional extras:
+
+```bash
+pip install -e ".[extra]"   # statsmodels (alternative logistic engine), tqdm, psutil
+pip install -e ".[test]"    # pytest, scikit-learn
+```
+
+All three optional packages degrade gracefully if absent. Results in this README
+were produced on Python 3.12, NumPy 2.0, SciPy 1.14, AnnData 0.12; CI runs the
+test suite on 3.11 and 3.12. Not yet on PyPI.
 
 ## Quick start
 

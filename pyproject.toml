@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "duet-de"
+version = "1.0.0"
+description = "Detection-Expression Unified Test: a two-part hurdle model for single-cell differential expression, in pure Python"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Bence Pachinger-Molnár" }]
+keywords = [
+    "single-cell", "RNA-seq", "differential-expression",
+    "hurdle-model", "MAST", "scverse", "bioinformatics",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+# The engine itself imports only numpy, scipy and pandas; anndata is what the
+# public API takes as input, and anndata >= 0.12 is what sets the 3.11 floor --
+# not any syntax in DUET.
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",      # scipy.special.ndtri_exp, used by the underflow-safe path
+    "pandas>=2.0",
+    "anndata>=0.10",
+]
+
+[project.optional-dependencies]
+# statsmodels only provides the alternative logistic engine; tqdm and psutil are
+# progress and memory reporting. All three degrade gracefully if absent.
+extra = ["statsmodels>=0.14", "tqdm", "psutil"]
+test = ["pytest>=7", "scikit-learn>=1.3"]
+
+[project.urls]
+Homepage = "https://github.com/Pahi95/duet"
+Issues = "https://github.com/Pahi95/duet/issues"
+
+[project.scripts]
+duet = "duet.core:_main"
+
+[tool.setuptools]
+packages = ["duet"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
