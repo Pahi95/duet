@@ -174,10 +174,29 @@ def test_output_contract(toy, tmp_path):
     assert ((t.neglog10p >= 0) | t.neglog10p.isna()).all()
 
 
+def test_vectorised_path_is_actually_taken(toy, tmp_path, monkeypatch):
+    """`vectorized=True` is NOT sufficient: the fast path applies only when there
+    are no covariates, and the default is covariates=("CDR",). Without
+    mast_compat=True the run silently uses the general path, which made the
+    equivalence test below compare the general path against itself."""
+    import duet.core as core
+    seen = []
+    orig = core._fit_celltype_vectorized
+    monkeypatch.setattr(core, "_fit_celltype_vectorized",
+                        lambda *a, **k: (seen.append(1), orig(*a, **k))[1])
+    _run(toy, tmp_path / "novec", vectorized=True)
+    assert seen == [], "fast path should be blocked by the default CDR covariate"
+    _run(toy, tmp_path / "vec", vectorized=True, mast_compat=True)
+    assert len(seen) == 1, "fast path was not entered under mast_compat=True"
+
+
 def test_vectorised_and_general_paths_agree(toy, tmp_path):
-    """The vectorised two-group path is an optimisation, not a different test."""
-    fast = _run(toy, tmp_path / "fast", vectorized=True).set_index("gene")
-    slow = _run(toy, tmp_path / "slow", vectorized=False).set_index("gene")
+    """The vectorised two-group path is an optimisation, not a different test.
+    mast_compat=True clears the covariates, which is what makes it eligible."""
+    fast = _run(toy, tmp_path / "fast", vectorized=True,
+                mast_compat=True).set_index("gene")
+    slow = _run(toy, tmp_path / "slow", vectorized=False,
+                mast_compat=True).set_index("gene")
     slow = slow.reindex(fast.index)
     m = (fast.tested == True) & (slow.tested == True)               # noqa: E712
     assert m.sum() > 20, "need a reasonable number of tested genes"
@@ -297,3 +316,19 @@ def test_engines_agree_on_separated_genes(tmp_path):
     assert np.allclose(sm.loc[m, "stat_hurdle"],
                        ni.reindex(sm.index).loc[m, "stat_hurdle"],
                        rtol=1e-6, atol=1e-6)
+
+
+def test_neglog10p_is_consistent_with_its_own_pvalue(toy, tmp_path):
+    """Regression: empirical-Bayes moderation rewrote stat_hurdle and pvalue but
+    left neglog10p holding the PRE-moderation value, so the column the docs tell
+    users to rank on disagreed with the p-value beside it by up to 0.43."""
+    from scipy.stats import chi2
+    for kw in ({"mast_compat": True},                       # vectorised path
+               {"covariates": ("CDR",), "eb_shrinkage": True}):   # general path
+        d = _run(toy, tmp_path / str(abs(hash(str(kw)))), **kw)
+        t = d[(d.tested == True) & (d.pvalue > 0)]          # noqa: E712
+        assert len(t) > 10
+        implied = -chi2.logsf(t.stat_hurdle.to_numpy(float),
+                              t.df_hurdle.to_numpy(float)) / np.log(10)
+        assert np.allclose(implied, t.neglog10p.to_numpy(float), atol=1e-9), \
+            f"neglog10p inconsistent with stat_hurdle for {kw}"

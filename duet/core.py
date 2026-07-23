@@ -586,6 +586,12 @@ def _apply_eb_shrinkage(df: pd.DataFrame, celltype: str, eb_min_genes: int = 10)
     df.loc[idx, "df_hurdle"] = df_h
     df.loc[idx, "pvalue"] = pval
     df.loc[idx, "Pr(>Chisq)"] = pval
+    # neglog10p MUST be refreshed here. It is computed per gene from the
+    # unmoderated statistic, so leaving it alone silently leaves the one column
+    # the documentation tells users to rank on describing the pre-shrinkage test
+    # while pvalue describes the post-shrinkage one. The vectorised path never
+    # showed this because it derives neglog10p after moderation.
+    df.loc[idx, "neglog10p"] = _neglog10_chi2_sf(stat_h, df_h.astype(float))
     _ph_log(celltype, f"EB shrinkage: prior df0={d0:.2f} s0^2={s0_sq:.4g} moderated {int(mask.sum())} genes")
     return df
 
