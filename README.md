@@ -5,8 +5,7 @@ single-cell differential expression, in pure Python.
 
 DUET is a from-scratch implementation of the MAST-style hurdle test: a logistic
 **detection** model and a Gaussian **positive-expression** model, whose
-likelihood-ratio statistics are summed into a single χ² test. Two voices, one
-piece.
+likelihood-ratio statistics are summed into a single χ² test.
 
 It works directly on sparse `AnnData`, with no R toolchain and no writing the
 expression matrix to disk. On 11 106 cells it is **117× faster than R MAST at the
@@ -21,11 +20,6 @@ MAST is linear in cells where DUET is nearly flat.
 > take 57 s, i.e. **MAST is ~1.4× faster on that path**. Accuracy is unaffected —
 > the covariate path reproduces MAST just as closely (log2FC *r* = 0.9994,
 > −log10 p Spearman 0.9998).
-
-> Formerly published in this project as `scPyDE`. Renamed in July 2026 because
-> that name read as "Python SCDE", and [SCDE](https://doi.org/10.1038/nmeth.2967)
-> (Kharchenko et al. 2014) is an established but statistically unrelated method —
-> a Bayesian dropout error model, not a hurdle.
 
 ---
 
@@ -157,7 +151,9 @@ scale gives |log2FC| ≈ 28 for genes detected in only one group — an artefact
 ## Validation
 
 Benchmarked against R MAST 1.33.0, diffxpy, PyDESeq2 and scanpy's Wilcoxon test on
-three datasets — an integrated human pancreas dataset (PDAC, unpublished), [Kang et al. 2018](https://doi.org/10.1038/nbt.4042)
+three datasets — an integrated human pancreas dataset (PDAC; assembled from GEO
+series GSE154778, GSE205013, GSE212966, GSE214295 and GSE242230 plus HPAP/PANC-DB
+donors, all public — the integration itself is unpublished), [Kang et al. 2018](https://doi.org/10.1038/nbt.4042)
 (PBMC + IFN-β, paired donors) and [Crowell et al. 2020](https://doi.org/10.1038/s41467-020-19894-4)
 (mouse cortex, LPS 4v4) — plus a muscat ground-truth simulation.
 
@@ -221,9 +217,10 @@ described by [Squair et al. 2021](https://doi.org/10.1038/s41467-021-25960-2) an
 [Zimmerman et al. 2021](https://doi.org/10.1038/s41467-021-21038-1). Thousands of
 cells from a handful of donors are not thousands of independent observations, and
 DUET reproduces MAST's behaviour here as faithfully as everywhere else. Under a
-label-permutation null DUET is correctly calibrated (type-I error 0.034–0.059
-across nine dataset × cell-type combinations, nominal 0.05); it is the
-independence assumption that fails, not the test.
+label-permutation null DUET is correctly calibrated (type-I error 0.034–0.059 in
+eight of nine dataset × cell-type combinations, nominal 0.05; the ninth is the
+pancreas Ductal case discussed below); it is the independence assumption that
+fails, not the test.
 
 A note on how much a single permutation tells you: on pancreas Ductal cells one
 draw (seed 0) gave 0.203. Repeating over ten seeds gives 0.034–0.075 for the other
@@ -232,8 +229,9 @@ genes surviving FDR correction in 9/10 seeds. A single permutation is a single
 draw from a null distribution that has real variance, because the cells are not
 exchangeable across donors — quote a mean over seeds, not one run. The residual
 inflation that does exist sits in sparsely detected genes (type-I 0.098 at
-detection rate ~0.18, falling to 0.036 at ~0.68), which is what
-`--duet-min-detect-frac` is for.
+detection rate ~0.18, falling to 0.036 at ~0.68), so filter on the
+`detect_rate_ref` / `detect_rate_test` columns — a `max(...) >= 0.10` cut is the
+Seurat/scanpy `min.pct` convention and is what every benchmark here applies.
 
 How badly depends on the experiment. Splitting the reference samples of each
 dataset at random and asking for differential expression between two groups that
@@ -298,23 +296,30 @@ the detection component is for.
 pytest tests/ -q
 ```
 
-18 tests covering the underflow-safe tail against SciPy, BH correctness, the
+24 tests covering the underflow-safe tail against SciPy, BH correctness, the
 logistic engine (including separation), and end-to-end invariants — that the
-vectorised and general code paths give the same answer, that a pure
-detection-rate change is detected, and that null data stays calibrated. Run on
-Python 3.10 and 3.12 by GitHub Actions.
+vectorised and general code paths give the same answer, that `neglog10p` stays
+consistent with its own p-value, that a pure detection-rate change is detected,
+and that null data stays calibrated. Run on Python 3.11 and 3.12 by GitHub
+Actions.
 
 ## Compatibility
 
-`run_scpyde` and `run_python_hurdle_de` remain as aliases for `run_duet`.
+`run_python_hurdle_de` remains an alias for `run_duet`.
 
 **`logistic_engine` now defaults to `"numpy_irls"`** (it was `"statsmodels"`). This
 affects only runs *with covariates* — the vectorised two-group path fits no GLM at
-all. It is 2.8–4.4× faster for the same fit, and agreement is exact on 80,947 of
-80,950 gene-by-cell-type tests measured across three datasets. The three exceptions
-are genes detected in exactly 100% of one group, where the maximum-likelihood
-estimate does not exist and no solver is correct. Pass
+all. It is 2.8–4.4× faster for the same fit, and the two engines agree on all
+80,947 gene-by-cell-type tests measured across three datasets: significant-call
+Jaccard 1.000000, largest statistic difference 2.0e-06. Pass
 `logistic_engine="statsmodels"` to reproduce results generated before this change.
+
+Genes where a condition group detects the gene in exactly 0 % or 100 % of cells
+used to be the one place the engines could differ, because separation was inferred
+from the size of the fitted coefficient — a quantity that diverges, so which of two
+different tests ran depended on where each solver stopped iterating. Separation is
+now determined from the detection margins directly, and such genes are marked in
+the `detection_separated` column.
 
 ## References
 
@@ -331,6 +336,9 @@ MIT — see [LICENSE](LICENSE).
 
 ## Status
 
-Research code under active development. The benchmarking and validation harness
-that produced the numbers above lives in a separate analysis project and is not
-part of this repository.
+Research code under active development. The scripts that produce the numbers
+above are in this repository: `bench_mast_export.py` / `bench_mast_run.R` /
+`bench_mast_report.py` for the speed and memory tables, `validate_covariate.py`
+and `validate_engine.py` for the agreement checks, and `simulate_replicates.R`
+with `evaluate_sim_replicates.py` for the ground-truth simulation. The datasets
+themselves are not; see the accessions above.

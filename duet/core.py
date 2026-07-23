@@ -7,14 +7,11 @@ pure Python, designed as a drop-in alternative to the R/MAST backend used by
 ``scPipeline.py`` (selected there via ``de_method=DUET``).
 
 The name is the model: a logistic **Detection** component and a Gaussian
-positive-**Expression** component, sung as one piece -- their likelihood-ratio
-statistics are summed into a single **Unified** chi-squared **Test**.
+positive-**Expression** component -- their likelihood-ratio statistics are
+summed into a single **Unified** chi-squared **Test**.
 
-Renamed from ``scPyDE`` (module ``CustomDE.scpyde``) in July 2026: that name
-read as "Python SCDE", and SCDE (Kharchenko et al., Nat Methods 2014) is an
-established but statistically unrelated method -- a Bayesian dropout error
-model, not a hurdle. ``run_scpyde`` and ``run_python_hurdle_de`` remain as
-aliases for ``run_duet``.
+``run_scpyde`` and ``run_python_hurdle_de`` are legacy aliases for ``run_duet``
+and continue to work.
 
 Why this exists
 ---------------
