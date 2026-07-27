@@ -332,3 +332,107 @@ def test_neglog10p_is_consistent_with_its_own_pvalue(toy, tmp_path):
                               t.df_hurdle.to_numpy(float)) / np.log(10)
         assert np.allclose(implied, t.neglog10p.to_numpy(float), atol=1e-9), \
             f"neglog10p inconsistent with stat_hurdle for {kw}"
+
+
+# --------------------------------------------------------------------------
+# pseudobulk arm: the aggregation is what has to be right
+# --------------------------------------------------------------------------
+
+def _donor_toy(n_donors=6, per=60, n_genes=40, paired=False, seed=11):
+    """Counts with a donor structure, so aggregation can be checked exactly."""
+    import anndata as ad
+    import pandas as pd
+    import scipy.sparse as sp
+    rng = np.random.default_rng(seed)
+    donors, conds = [], []
+    for d in range(n_donors):
+        if paired:                       # every donor gives both arms
+            donors += [f"d{d}"] * per
+            conds += ["ctrl"] * (per // 2) + ["stim"] * (per - per // 2)
+        else:                            # each donor belongs to one arm
+            donors += [f"d{d}"] * per
+            conds += [("ctrl" if d < n_donors // 2 else "stim")] * per
+    n = len(donors)
+    X = rng.poisson(3.0, size=(n, n_genes)).astype(float)
+    stim = np.array(conds) == "stim"
+    X[stim, :5] *= 6                     # genes 0-4 are genuinely differential
+    obs = pd.DataFrame({"celltype": "T", "donor": donors, "condition": conds},
+                       index=[f"c{i}" for i in range(n)])
+    a = ad.AnnData(X=sp.csr_matrix(np.log1p(X)), obs=obs,
+                   var=pd.DataFrame(index=[f"g{j}" for j in range(n_genes)]))
+    a.layers["counts"] = sp.csr_matrix(X)
+    return a
+
+
+def test_pseudobulk_aggregates_on_donor_by_condition():
+    """The unit is (donor, condition). Grouping by donor alone would merge a
+    paired design into one profile per donor and lose the contrast entirely."""
+    from duet import aggregate_pseudobulk
+    a = _donor_toy(n_donors=4, paired=True)
+    pb, meta = aggregate_pseudobulk(
+        a, donor_col="donor", condition_col="condition",
+        ref_label="ctrl", test_label="stim")
+    assert len(pb) == 8, "4 donors x 2 conditions must give 8 profiles"
+    assert (meta["condition"] == "ctrl").sum() == 4
+    assert (meta["condition"] == "stim").sum() == 4
+    assert meta.index.is_unique
+
+
+def test_pseudobulk_counts_are_exact_sums():
+    from duet import aggregate_pseudobulk
+    import scipy.sparse as sp
+    a = _donor_toy(n_donors=4)
+    pb, meta = aggregate_pseudobulk(
+        a, donor_col="donor", condition_col="condition",
+        ref_label="ctrl", test_label="stim")
+    raw = a.layers["counts"]
+    raw = raw.toarray() if sp.issparse(raw) else np.asarray(raw)
+    for name, row in meta.iterrows():
+        m = ((a.obs.donor == row.donor) & (a.obs.condition == row.condition)).to_numpy()
+        assert np.allclose(pb.loc[name].to_numpy(), raw[m].sum(axis=0))
+
+
+def test_pseudobulk_needs_a_counts_layer():
+    """X is log-normalised; a negative-binomial model on it would be nonsense."""
+    from duet import aggregate_pseudobulk
+    a = _donor_toy()
+    del a.layers["counts"]
+    with pytest.raises(ValueError, match="raw counts"):
+        aggregate_pseudobulk(a, donor_col="donor", condition_col="condition",
+                             ref_label="ctrl", test_label="stim")
+
+
+def test_pseudobulk_refuses_too_few_donors():
+    """Too few samples must be reported, not returned as a table of NaN that
+    reads as 'nothing was differential'."""
+    from duet import run_pseudobulk
+    pytest.importorskip("pydeseq2")
+    a = _donor_toy(n_donors=2)           # one donor per arm
+    r = run_pseudobulk(a, donor_col="donor", condition_col="condition",
+                       ref_label="ctrl", test_label="stim",
+                       min_donors_per_group=2)
+    assert not r["pb_tested"].any()
+    assert r["pb_skip_reason"].str.contains("donors/group").all()
+
+
+def test_combine_calls_requires_the_sample_level_arm():
+    """A gene the hurdle calls but pseudobulk does not is ranked_only, never
+    significant -- that is the whole point of the second arm."""
+    import pandas as pd
+    from duet import combine_calls
+    duet_df = pd.DataFrame({"gene": ["a", "b", "c"], "celltype": "T",
+                            "fdr": [0.001, 0.001, 0.9]})
+    pb_df = pd.DataFrame({"gene": ["a", "b", "c"], "celltype": "T",
+                          "pb_padj": [0.01, 0.5, 0.5], "pb_tested": True})
+    out = combine_calls(duet_df, pb_df).set_index("gene")
+    assert out.loc["a", "call"] == "significant"
+    assert out.loc["b", "call"] == "ranked_only"
+    assert out.loc["c", "call"] == "ns"
+
+
+def test_donor_and_condition_must_differ():
+    from duet import run_duet_pseudobulk
+    a = _donor_toy()
+    with pytest.raises(ValueError, match="must differ"):
+        run_duet_pseudobulk(a, condition_col="condition", donor_col="condition",
+                            ref_label="ctrl", test_label="stim")

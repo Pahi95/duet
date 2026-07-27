@@ -19,6 +19,12 @@ float64 floor, where ``pvalue`` stores exactly 0.0 and ties every such gene.
 aliases and continue to work.
 """
 
+from .pseudobulk import (
+    run_duet_pseudobulk,
+    run_pseudobulk,
+    aggregate_pseudobulk,
+    combine_calls,
+)
 from .core import (
     run_duet,
     run_duet_cnv,
@@ -32,6 +38,10 @@ from .core import (
 )
 
 __all__ = [
+    "run_duet_pseudobulk",
+    "run_pseudobulk",
+    "aggregate_pseudobulk",
+    "combine_calls",
     "run_duet",
     "run_duet_cnv",
     "run_scpyde",

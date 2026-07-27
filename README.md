@@ -189,6 +189,43 @@ cell (r² = 1.0000)**; DUET streams one sparse gene column at a time, so its
 footprint stays flat. Note that cell-level testing runs within a cell type, so the
 population size — not the size of the whole object — is what sets the cost.
 
+## Calling genes: use the pseudobulk arm
+
+Everything above says the same thing: across donors the hurdle is a **ranking**
+tool, not a **calling** tool. `run_duet_pseudobulk` runs both arms and reports
+them together, so the recommendation can be followed without leaving DUET.
+
+```python
+from duet import run_duet_pseudobulk
+
+out = run_duet_pseudobulk(
+    adata, output_dir="results",
+    celltype_col="celltype",
+    condition_col="condition", ref_label="ctrl", test_label="stim",
+    donor_col="patient",        # who each cell came from
+    counts_layer="counts",      # raw counts; the hurdle uses X
+)
+```
+
+Each gene gets both arms and a `call` column:
+
+| `call` | meaning |
+|---|---|
+| `significant` | the sample-level arm supports it — **this is what you report** |
+| `ranked_only` | the hurdle ranks it highly, pseudobulk does not — a hypothesis |
+| `ns` / `not_tested` | neither, or too few donors to ask |
+
+Counts are summed per **(donor, condition)**, not per donor: in a paired design
+grouping by donor alone merges both conditions into one profile and destroys the
+contrast. Requires `pip install pydeseq2`.
+
+On a donor-swap null — two groups that differ by nothing — over 20 splits:
+
+| | mean | max | splits above 5% |
+|---|---:|---:|---:|
+| cell-level hurdle | 34.9 % | 99.0 % | 11/20 |
+| **sample-level arm** | **0.04 %** | **0.24 %** | **0/20** |
+
 ## Limitations — read before reporting gene counts
 
 **DUET's FDR is not usable across donors.** On a muscat simulation with realistic
