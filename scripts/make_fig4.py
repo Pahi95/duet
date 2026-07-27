@@ -19,7 +19,9 @@ Two problems with the first version, both of which hid real results:
 All numbers are read from results/null/*.csv; nothing is hardcoded.
 """
 from __future__ import annotations
+import argparse
 import glob
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -27,6 +29,9 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _figutil import maybe_split   # noqa: E402
 
 HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
 OUT = HERE / "evidence" / "figures" / "fig4_null_calibration.png"
@@ -78,6 +83,11 @@ def grouped_bars(ax, d, value_col):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--split", action="store_true",
+                    help="also write each panel as its own image")
+    args = ap.parse_args()
+
     D = load()
     fig, axes = plt.subplots(1, 2, figsize=(15.2, 6.4))
     fig.patch.set_facecolor("white")
@@ -153,6 +163,7 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, dpi=200, bbox_inches="tight", facecolor="white")
     print(f"wrote {OUT}")
+    maybe_split(fig, args, OUT.parent / "panels", "fig4")
 
 
 if __name__ == "__main__":

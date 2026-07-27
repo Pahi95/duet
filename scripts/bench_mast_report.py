@@ -22,6 +22,7 @@ Outputs: bench/benchmark_summary.csv, bench/fig_benchmark.png
 """
 from __future__ import annotations
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -30,6 +31,9 @@ from scipy.stats import spearmanr
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _figutil import save_panels   # noqa: E402
 
 HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
 BENCH = HERE / "bench"
@@ -154,6 +158,8 @@ def figure(t: pd.DataFrame) -> None:
     out = BENCH / "fig_benchmark.png"
     fig.savefig(out, dpi=155, bbox_inches="tight", facecolor="white")
     print(f"wrote {out}")
+    n = save_panels(fig, HERE / "evidence" / "figures" / "panels", "fig_benchmark", dpi=155)
+    print(f"  + {len(n)} single-panel files")
 
 
 def main():
