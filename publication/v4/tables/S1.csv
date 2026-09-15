@@ -1,0 +1,91 @@
+dataset,celltype,n_cells,mast_method,mast_ebayes,component,n_genes,pearson,spearman,max_abs_diff,max_rel_diff,median_rel_diff,share_within_tol,worst_genes
+kang,CD14+ Monocytes,5697,bayesglm,True,stat_detect,1954,1,1,2.812,0.3596,8.198e-07,0.998,FTL;HLA-B;H3F3B
+kang,CD14+ Monocytes,5697,bayesglm,True,stat_continuous,1954,1,1,31.72,0.07654,0.01955,0,SCIN;CD80;HAPLN3
+kang,CD14+ Monocytes,5697,bayesglm,True,stat_hurdle,1954,1,1,34.47,0.03691,0.003429,0.2354,HPRT1;SS18L2;DNAJB1
+kang,CD14+ Monocytes,5697,bayesglm,True,df_hurdle,1954,,,1,0.5,0,0.9985,B2M;MALAT1;FTH1
+kang,CD14+ Monocytes,5697,bayesglm,True,coef_detect,1954,0.8622,1,20.05,0.9354,0.0009314,0.5532,FTL;HLA-B;ISG15
+kang,CD14+ Monocytes,5697,bayesglm,True,coef_continuous,1954,1,1,5.044e-07,3.328e-05,1.12e-07,1,RARRES3;PNPT1;MSR1
+kang,CD14+ Monocytes,5697,bayesglm,True,logFC,1954,1,1,0.004109,0.4897,0.0007272,0.6888,MFSD1;MYL12B;SNAP23
+kang,CD14+ Monocytes,5697,bayesglm,True,neglog10_p,1860,1,1,2.398,0.03691,0.003725,0.2199,HPRT1;SS18L2;DNAJB1
+kang,CD14+ Monocytes,5697,bayesglm,True,neglog10_fdr,1861,1,1,1.532,0.3269,0.0412,0.007523,TERF2IP;FABP5;CTSD
+kang,CD14+ Monocytes,5697,bayesglm,True,sig_calls_jaccard,1954,,,19,,,0.99,
+kang,CD14+ Monocytes,5697,glm,True,stat_detect,1954,1,1,1.759e-05,6.163e-08,9.638e-15,1,EMP3;HLA-B;FTL
+kang,CD14+ Monocytes,5697,glm,True,stat_continuous,1954,1,1,31.72,0.07654,0.01955,0,SCIN;CD80;HAPLN3
+kang,CD14+ Monocytes,5697,glm,True,stat_hurdle,1954,1,1,31.72,0.03691,0.003425,0.2359,HPRT1;SS18L2;DNAJB1
+kang,CD14+ Monocytes,5697,glm,True,df_hurdle,1954,1,1,0,0,0,1,PTTG1IP;SUMO3;CSTB
+kang,CD14+ Monocytes,5697,glm,True,coef_detect,1951,0.9898,1,8.065,0.2829,5.669e-12,0.9979,ISG15;IFITM3;HLA-B
+kang,CD14+ Monocytes,5697,glm,True,coef_continuous,1954,1,1,5.044e-07,3.328e-05,1.12e-07,1,RARRES3;PNPT1;MSR1
+kang,CD14+ Monocytes,5697,glm,True,logFC,1951,1,1,3.978e-08,0.0001468,1.515e-08,1,MFSD1;STK17A;HSPE1
+kang,CD14+ Monocytes,5697,glm,True,neglog10_p,1860,1,1,0.8294,0.03691,0.003719,0.2204,HPRT1;SS18L2;DNAJB1
+kang,CD14+ Monocytes,5697,glm,True,neglog10_fdr,1861,1,1,0.8605,0.3269,0.0412,0.007523,TERF2IP;FABP5;CTSD
+kang,CD14+ Monocytes,5697,glm,True,sig_calls_jaccard,1954,,,19,,,0.99,
+kang,CD14+ Monocytes,5697,glm,False,stat_detect,1954,1,1,1.759e-05,6.163e-08,9.638e-15,1,EMP3;HLA-B;FTL
+kang,CD14+ Monocytes,5697,glm,False,stat_continuous,1954,1,1,23.21,0.02975,0.001562,0.2682,NUPR1;CXCL1;G0S2
+kang,CD14+ Monocytes,5697,glm,False,stat_hurdle,1954,1,1,23.21,0.007826,0.0003367,0.7917,TMEM176B;RBM47;STIP1
+kang,CD14+ Monocytes,5697,glm,False,df_hurdle,1954,1,1,0,0,0,1,PTTG1IP;SUMO3;CSTB
+kang,CD14+ Monocytes,5697,glm,False,coef_detect,1951,0.9898,1,8.065,0.2829,5.669e-12,0.9979,ISG15;IFITM3;HLA-B
+kang,CD14+ Monocytes,5697,glm,False,coef_continuous,1954,1,1,5.044e-07,3.328e-05,1.12e-07,1,RARRES3;PNPT1;MSR1
+kang,CD14+ Monocytes,5697,glm,False,logFC,1951,1,1,3.978e-08,0.0001468,1.515e-08,1,MFSD1;STK17A;HSPE1
+kang,CD14+ Monocytes,5697,glm,False,neglog10_p,1860,1,1,0.7003,0.007826,0.0003369,0.7946,TMEM176B;RBM47;STIP1
+kang,CD14+ Monocytes,5697,glm,False,neglog10_fdr,1861,1,1,1.072,0.3277,0.04599,0.0005373,TERF2IP;FABP5;PPP1R12A
+kang,CD14+ Monocytes,5697,glm,False,sig_calls_jaccard,1954,,,20,,,0.9895,
+crowell,Astrocytes,1740,bayesglm,True,stat_detect,2988,1,1,1.71,0.008234,9.836e-06,0.9983,ENSMUSG00000034855.Cxcl10;ENSMUSG00000026822.Lcn2;ENSMUSG00000029380.Cxcl1
+crowell,Astrocytes,1740,bayesglm,True,stat_continuous,2988,0.9993,0.9982,28.19,0.3521,0.1744,0.0003347,ENSMUSG00000026822.Lcn2;ENSMUSG00000029380.Cxcl1;ENSMUSG00000086296.D030055H07Rik
+crowell,Astrocytes,1740,bayesglm,True,stat_hurdle,2988,0.9998,0.997,28.2,0.2368,0.08142,0.04886,ENSMUSG00000038473.Nos1ap;ENSMUSG00000022811.Zfp148;ENSMUSG00000035569.Ankrd11
+crowell,Astrocytes,1740,bayesglm,True,df_hurdle,2988,0.707,0.707,1,0.5,0,0.9997,ENSMUSG00000092341.Malat1;ENSMUSG00000040022.Rab11fip2;ENSMUSG00000087095.Emx2os
+crowell,Astrocytes,1740,bayesglm,True,coef_detect,2988,0.8521,1,20.84,0.7997,0.003142,0.0003347,ENSMUSG00000034855.Cxcl10;ENSMUSG00000026822.Lcn2;ENSMUSG00000029380.Cxcl1
+crowell,Astrocytes,1740,bayesglm,True,coef_continuous,2987,1,1,5.163e-07,0.00021,2.459e-07,1,ENSMUSG00000031447.Lamp1;ENSMUSG00000029821.Dfna5;ENSMUSG00000025326.Ube3a
+crowell,Astrocytes,1740,bayesglm,True,logFC,2987,1,1,0.00384,0.4225,0.003158,0.07767,ENSMUSG00000035640.Cbarp;ENSMUSG00000045948.Mrps12;ENSMUSG00000066037.Hnrnpr
+crowell,Astrocytes,1740,bayesglm,True,neglog10_p,2988,0.9998,0.997,6.123,0.2368,0.08159,0.04886,ENSMUSG00000038473.Nos1ap;ENSMUSG00000022811.Zfp148;ENSMUSG00000035569.Ankrd11
+crowell,Astrocytes,1740,bayesglm,True,neglog10_fdr,2988,0.9997,0.997,5.554,0.1657,0.05675,0.006359,ENSMUSG00000054252.Fgfr3;ENSMUSG00000033701.Acbd6;ENSMUSG00000025326.Ube3a
+crowell,Astrocytes,1740,bayesglm,True,sig_calls_jaccard,2988,,,95,,,0.9441,
+crowell,Astrocytes,1740,glm,True,stat_detect,2988,1,1,4.873e-06,3.489e-06,4.769e-14,1,ENSMUSG00000020982.Nemf;ENSMUSG00000046364.Rpl27a;ENSMUSG00000034855.Cxcl10
+crowell,Astrocytes,1740,glm,True,stat_continuous,2988,0.9993,0.9982,28.19,0.3521,0.1744,0.0003347,ENSMUSG00000026822.Lcn2;ENSMUSG00000029380.Cxcl1;ENSMUSG00000086296.D030055H07Rik
+crowell,Astrocytes,1740,glm,True,stat_hurdle,2988,0.9998,0.997,28.19,0.2368,0.08141,0.04987,ENSMUSG00000038473.Nos1ap;ENSMUSG00000022811.Zfp148;ENSMUSG00000035569.Ankrd11
+crowell,Astrocytes,1740,glm,True,df_hurdle,2988,1,1,0,0,0,1,ENSMUSG00000040022.Rab11fip2;ENSMUSG00000087095.Emx2os;ENSMUSG00000067038.Rps12-ps3
+crowell,Astrocytes,1740,glm,True,coef_detect,2987,0.9845,1,8.065,0.3095,8.209e-12,0.9997,ENSMUSG00000034855.Cxcl10;ENSMUSG00000032253.Phip;ENSMUSG00000024423.Impact
+crowell,Astrocytes,1740,glm,True,coef_continuous,2987,1,1,5.163e-07,0.00021,2.459e-07,1,ENSMUSG00000031447.Lamp1;ENSMUSG00000029821.Dfna5;ENSMUSG00000025326.Ube3a
+crowell,Astrocytes,1740,glm,True,logFC,2986,1,1,4.118e-08,5.909e-05,6.111e-08,1,ENSMUSG00000052889.Prkcb;ENSMUSG00000028790.Khdrbs1;ENSMUSG00000001260.Gabrg1
+crowell,Astrocytes,1740,glm,True,neglog10_p,2988,0.9998,0.997,6.121,0.2368,0.08141,0.04987,ENSMUSG00000038473.Nos1ap;ENSMUSG00000022811.Zfp148;ENSMUSG00000035569.Ankrd11
+crowell,Astrocytes,1740,glm,True,neglog10_fdr,2988,0.9997,0.997,5.553,0.1657,0.05676,0.006359,ENSMUSG00000054252.Fgfr3;ENSMUSG00000033701.Acbd6;ENSMUSG00000025326.Ube3a
+crowell,Astrocytes,1740,glm,True,sig_calls_jaccard,2988,,,95,,,0.9441,
+crowell,Astrocytes,1740,glm,False,stat_detect,2988,1,1,4.873e-06,3.489e-06,4.769e-14,1,ENSMUSG00000020982.Nemf;ENSMUSG00000046364.Rpl27a;ENSMUSG00000034855.Cxcl10
+crowell,Astrocytes,1740,glm,False,stat_continuous,2988,0.9999,0.9996,19.62,0.2052,0.0171,0.03347,ENSMUSG00000002325.Irf9;ENSMUSG00000030111.A2m;ENSMUSG00000026822.Lcn2
+crowell,Astrocytes,1740,glm,False,stat_hurdle,2988,1,0.9998,19.62,0.1053,0.006931,0.1884,ENSMUSG00000040183.Ankrd6;ENSMUSG00000024480.Ap3s1;ENSMUSG00000021916.Glt8d1
+crowell,Astrocytes,1740,glm,False,df_hurdle,2988,1,1,0,0,0,1,ENSMUSG00000040022.Rab11fip2;ENSMUSG00000087095.Emx2os;ENSMUSG00000067038.Rps12-ps3
+crowell,Astrocytes,1740,glm,False,coef_detect,2987,0.9845,1,8.065,0.3095,8.209e-12,0.9997,ENSMUSG00000034855.Cxcl10;ENSMUSG00000032253.Phip;ENSMUSG00000024423.Impact
+crowell,Astrocytes,1740,glm,False,coef_continuous,2987,1,1,5.163e-07,0.00021,2.459e-07,1,ENSMUSG00000031447.Lamp1;ENSMUSG00000029821.Dfna5;ENSMUSG00000025326.Ube3a
+crowell,Astrocytes,1740,glm,False,logFC,2986,1,1,4.118e-08,5.909e-05,6.111e-08,1,ENSMUSG00000052889.Prkcb;ENSMUSG00000028790.Khdrbs1;ENSMUSG00000001260.Gabrg1
+crowell,Astrocytes,1740,glm,False,neglog10_p,2988,1,0.9998,4.26,0.1053,0.006931,0.1884,ENSMUSG00000040183.Ankrd6;ENSMUSG00000024480.Ap3s1;ENSMUSG00000021916.Glt8d1
+crowell,Astrocytes,1740,glm,False,neglog10_fdr,2988,0.9998,0.9998,3.691,0.2514,0.1622,0.002008,ENSMUSG00000040183.Ankrd6;ENSMUSG00000021916.Glt8d1;ENSMUSG00000029642.Polr1d
+crowell,Astrocytes,1740,glm,False,sig_calls_jaccard,2988,,,268,,,0.8584,
+pancreas,Ductal cell,8020,bayesglm,True,stat_detect,9772,1,1,4.611,0.0249,3.395e-07,0.9366,TPT1;EEF1A1;RPS18
+pancreas,Ductal cell,8020,bayesglm,True,stat_continuous,9772,1,1,15.96,0.08125,0.009539,0.07307,RCAN3AS;FRMD6-AS2;SHISA9
+pancreas,Ductal cell,8020,bayesglm,True,stat_hurdle,9772,1,1,15.96,0.02407,0.004046,0.1618,ZNF799;WDR47;CREB3L4
+pancreas,Ductal cell,8020,bayesglm,True,df_hurdle,9772,1,1,0,0,0,1,ZSCAN32;ZSCAN30;ZSCAN29
+pancreas,Ductal cell,8020,bayesglm,True,coef_detect,9772,0.9451,1,20.19,0.8312,0.0005899,0.7771,TPT1;EEF1A1;RPS18
+pancreas,Ductal cell,8020,bayesglm,True,coef_continuous,9058,1,1,8.892e-08,7.225e-05,2.042e-08,1,AP2M1;ACTR2;SELENOS
+pancreas,Ductal cell,8020,bayesglm,True,logFC,9058,1,1,0.001445,0.8276,0.0008154,0.5848,DPP9;RIMKLB;ABCB1
+pancreas,Ductal cell,8020,bayesglm,True,neglog10_p,9071,1,1,1.476,0.02407,0.004529,0.1336,ZNF799;WDR47;CREB3L4
+pancreas,Ductal cell,8020,bayesglm,True,neglog10_fdr,9080,1,1,0.8072,0.07743,0.00196,0.2534,SDSL;PTMA;DCXR
+pancreas,Ductal cell,8020,bayesglm,True,sig_calls_jaccard,9772,,,0,,,1,
+pancreas,Ductal cell,8020,glm,True,stat_detect,9772,1,1,1.768e-05,6.665e-06,4.974e-15,1,RXRB;NUP153;HIBADH
+pancreas,Ductal cell,8020,glm,True,stat_continuous,9772,1,1,15.96,0.08125,0.009539,0.07307,RCAN3AS;FRMD6-AS2;SHISA9
+pancreas,Ductal cell,8020,glm,True,stat_hurdle,9772,1,1,15.96,0.02407,0.004045,0.2239,ZNF799;WDR47;CREB3L4
+pancreas,Ductal cell,8020,glm,True,df_hurdle,9772,1,1,0,0,0,1,ZSCAN32;ZSCAN30;ZSCAN29
+pancreas,Ductal cell,8020,glm,True,coef_detect,9772,0.9985,0.9999,8.065,0.317,3.38e-12,0.9266,HNRNPA1P48;CCDC84;TMEM189
+pancreas,Ductal cell,8020,glm,True,coef_continuous,9058,1,1,8.892e-08,7.225e-05,2.042e-08,1,AP2M1;ACTR2;SELENOS
+pancreas,Ductal cell,8020,glm,True,logFC,9058,1,1,3.171e-08,8.336e-05,1.532e-08,1,USP5;ABCB1;RCC1L
+pancreas,Ductal cell,8020,glm,True,neglog10_p,9071,1,1,1.475,0.02407,0.004529,0.1827,ZNF799;WDR47;CREB3L4
+pancreas,Ductal cell,8020,glm,True,neglog10_fdr,9079,1,1,0.8069,0.07743,0.002128,0.2339,SDSL;PTMA;DCXR
+pancreas,Ductal cell,8020,glm,True,sig_calls_jaccard,9772,,,0,,,1,
+pancreas,Ductal cell,8020,glm,False,stat_detect,9772,1,1,1.768e-05,6.665e-06,4.974e-15,1,RXRB;NUP153;HIBADH
+pancreas,Ductal cell,8020,glm,False,stat_continuous,9772,1,1,8.434,0.04551,0.0008241,0.5526,RCAN3AS;FRMD6-AS2;LINC00115
+pancreas,Ductal cell,8020,glm,False,stat_hurdle,9772,1,1,8.434,0.009046,0.0003511,0.7768,CCL20;SCGB3A1;S100A9
+pancreas,Ductal cell,8020,glm,False,df_hurdle,9772,1,1,0,0,0,1,ZSCAN32;ZSCAN30;ZSCAN29
+pancreas,Ductal cell,8020,glm,False,coef_detect,9772,0.9985,0.9999,8.065,0.317,3.38e-12,0.9266,HNRNPA1P48;CCDC84;TMEM189
+pancreas,Ductal cell,8020,glm,False,coef_continuous,9058,1,1,8.892e-08,7.225e-05,2.042e-08,1,AP2M1;ACTR2;SELENOS
+pancreas,Ductal cell,8020,glm,False,logFC,9058,1,1,3.171e-08,8.336e-05,1.532e-08,1,USP5;ABCB1;RCC1L
+pancreas,Ductal cell,8020,glm,False,neglog10_p,9071,1,1,0.5256,0.009046,0.0003848,0.7629,CCL20;SCGB3A1;S100A9
+pancreas,Ductal cell,8020,glm,False,neglog10_fdr,9079,1,1,1.096,0.07989,0.006505,0.0005507,SDSL;PTMA;DCXR
+pancreas,Ductal cell,8020,glm,False,sig_calls_jaccard,9772,,,0,,,1,

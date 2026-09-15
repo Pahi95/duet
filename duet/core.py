@@ -96,7 +96,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp
 from scipy.stats import chi2, chi2_contingency, fisher_exact, t as _student_t
-from scipy.special import digamma, gammaln, polygamma, xlogy
+from scipy.special import betaln, digamma, gammaln, ndtri_exp, polygamma, xlogy
 
 __version__ = "1.0.0"
 
@@ -487,6 +487,109 @@ def _squeeze_var(s2: np.ndarray, df: np.ndarray):
 
 
 # --------------------------------------------------------------------------- #
+# Moderated-t tail in log space.
+#
+# The EB step turns each gene's moderated t into a two-sided p-value and then into
+# the 1-df chi-square that is added to the detection statistic. scipy's t.sf (and
+# t.logsf) underflow once that tail drops below ~1e-308, which DUET used to handle
+# by clipping p at 1e-300 -- capping the continuous statistic at
+# chi2.isf(1e-300, 1) = 1373.87 and tying every gene beyond it (1.19% of genes at
+# 11,106 cells). Below the floor the tail is now evaluated in log space and the
+# chi-square recovered with ndtri_exp; above it nothing changes, bit for bit.
+# --------------------------------------------------------------------------- #
+_T_LOGSPACE_BELOW = 1e-300
+
+
+def _log_betainc_small(a, b, logx, log1mx, max_iter: int = 100000, tol: float = 1e-15):
+    """log I_x(a, b), the regularised incomplete beta, without leaving log space.
+
+    Continued fraction (modified Lentz, as in Numerical Recipes' betacf) times the
+    prefactor x^a (1-x)^b / (a B(a, b)), all as logarithms so nothing underflows.
+    ``logx`` and ``log1mx`` are passed separately because 1 - x is the small
+    quantity in the t tail and must not be formed by subtraction. The fraction
+    converges for x < (a + 1) / (a + b + 2), which always holds in the extreme
+    upper tail of the t distribution, the only place this is used.
+    """
+    a = np.asarray(a, dtype=np.float64)
+    b = np.broadcast_to(np.asarray(b, dtype=np.float64), a.shape)
+    logx = np.asarray(logx, dtype=np.float64)
+    log1mx = np.asarray(log1mx, dtype=np.float64)
+    x = np.exp(logx)
+    tiny = 1e-300
+    qab, qap, qam = a + b, a + 1.0, a - 1.0
+    c = np.ones_like(x)
+    d = 1.0 - qab * x / qap
+    d = 1.0 / np.where(np.abs(d) < tiny, tiny, d)
+    h = d.copy()
+    active = np.ones(x.shape, dtype=bool)
+    for m in range(1, max_iter + 1):
+        i = np.flatnonzero(active)
+        if i.size == 0:
+            break
+        ai, bi, xi, m2 = a[i], b[i], x[i], 2.0 * m
+        aa = m * (bi - m) * xi / ((qam[i] + m2) * (ai + m2))
+        di = 1.0 + aa * d[i]
+        di = 1.0 / np.where(np.abs(di) < tiny, tiny, di)
+        ci = 1.0 + aa / c[i]
+        ci = np.where(np.abs(ci) < tiny, tiny, ci)
+        hi = h[i] * di * ci
+        aa = -(ai + m) * (qab[i] + m) * xi / ((ai + m2) * (qap[i] + m2))
+        di = 1.0 + aa * di
+        di = 1.0 / np.where(np.abs(di) < tiny, tiny, di)
+        ci = 1.0 + aa / ci
+        ci = np.where(np.abs(ci) < tiny, tiny, ci)
+        delta = di * ci
+        h[i], d[i], c[i] = hi * delta, di, ci
+        active[i] = np.abs(delta - 1.0) >= tol
+    if active.any():                                   # pragma: no cover - not reached in practice
+        warnings.warn(f"incomplete-beta continued fraction did not converge for {int(active.sum())} values")
+    return a * logx + b * log1mx - np.log(a) - betaln(a, b) + np.log(h)
+
+
+def _log_two_sided_t_sf(tval, df):
+    """log(2 * P(T_df > |t|)), finite however extreme t is.
+
+    SciPy's value is used wherever it is at least 1e-300; below that the tail is
+    I_x(df/2, 1/2) with x = df / (df + t^2), evaluated by ``_log_betainc_small``.
+    """
+    t = np.abs(np.asarray(tval, dtype=np.float64))
+    df = np.broadcast_to(np.asarray(df, dtype=np.float64), t.shape)
+    with np.errstate(divide="ignore", under="ignore"):
+        p = 2.0 * _student_t.sf(t, df)
+        out = np.log(p)
+    deep = ~(p >= _T_LOGSPACE_BELOW) & np.isfinite(t) & (df > 0)
+    if deep.any():
+        tt, nu = t[deep], df[deep]
+        log_t2 = 2.0 * np.log(tt)
+        log_den = np.logaddexp(np.log(nu), log_t2)          # log(nu + t^2)
+        out[deep] = _log_betainc_small(nu / 2.0, 0.5, np.log(nu) - log_den, log_t2 - log_den)
+    return out
+
+
+def _moderated_t_to_chi2(tval, post_df):
+    """Two-sided moderated-t p-value and the 1-df chi-square with the same tail.
+
+    Returns ``(p, stat, log_p)``. Where p >= 1e-300 this is exactly what DUET always
+    computed, ``chi2.isf(p, 1)``. Below it the chi-square comes from the log tail,
+    stat = ndtri_exp(log(p / 2))^2, so it keeps growing instead of stopping at
+    1373.87; ``p`` itself may then underflow to 0.0, ``stat`` and ``log_p`` do not.
+    """
+    t = np.abs(np.asarray(tval, dtype=np.float64))
+    df = np.broadcast_to(np.asarray(post_df, dtype=np.float64), t.shape)
+    log_p = _log_two_sided_t_sf(t, df)
+    with np.errstate(under="ignore"):
+        p_scipy = 2.0 * _student_t.sf(t, df)
+        shallow = p_scipy >= _T_LOGSPACE_BELOW
+        # SciPy's own p where it is usable, so those genes are bit-identical to before
+        p = np.where(shallow, np.minimum(p_scipy, 1.0), np.exp(log_p))
+    stat = np.empty_like(log_p)
+    stat[shallow] = chi2.isf(p[shallow], 1)
+    z = ndtri_exp(log_p[~shallow] - math.log(2.0))           # log(p/2) = log Phi(-|z|)
+    stat[~shallow] = z * z
+    return p, stat, log_p
+
+
+# --------------------------------------------------------------------------- #
 # Gaussian positive-expression component.
 # --------------------------------------------------------------------------- #
 def _continuous_lrt(X_full_pos, X_null_pos, y_pos, cond_col_index, n_cond_cols):
@@ -569,8 +672,7 @@ def _apply_eb_shrinkage(df: pd.DataFrame, celltype: str, eb_min_genes: int = 10)
     post_df = dfr + d0c
     se = np.sqrt(np.maximum(s2_post * vcoef, 1e-300))
     tval = beta / se
-    p_c = np.clip(2.0 * _student_t.sf(np.abs(tval), post_df), 1e-300, 1.0)
-    stat_c = chi2.isf(p_c, 1)                     # 1-df chi-square, additive in hurdle
+    p_c, stat_c, _ = _moderated_t_to_chi2(tval, post_df)   # 1-df chi-square, additive in hurdle
     stat_h = stat_d + stat_c
     df_h = (df_d + 1).astype(int)
     pval = chi2.sf(stat_h, df_h)
@@ -1030,9 +1132,9 @@ def _fit_celltype_vectorized(
             post_df = dfresid[m] + d0c
             se = np.sqrt(np.maximum(s2_post * vcoef[m], 1e-300))
             tval = beta_cont[m] / se
-            pcm = np.clip(2.0 * _student_t.sf(np.abs(tval), post_df), 1e-300, 1.0)
+            pcm, stat_m, _ = _moderated_t_to_chi2(tval, post_df)
             stat_cont = stat_cont.copy()
-            stat_cont[m] = chi2.isf(pcm, 1)
+            stat_cont[m] = stat_m
             p_cont[m] = pcm
             _ph_log(celltype, f"EB shrinkage: prior df0={d0:.2f} s0^2={s0_sq:.4g} moderated {int(m.sum())} genes")
 

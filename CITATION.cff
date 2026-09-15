@@ -5,12 +5,9 @@ type: software
 authors:
   - family-names: "Pachinger-Molnár"
     given-names: "Bence"
-    # orcid: "https://orcid.org/0000-0000-0000-0000"   # uncomment and fill
-    # affiliation: "..."                                # uncomment and fill
 repository-code: "https://github.com/Pahi95/duet"
 license: MIT
 version: 1.0.0
-# doi: "10.5281/zenodo.XXXXXXX"   # concept DOI, added after the first Zenodo release
 keywords:
   - single-cell RNA-seq
   - differential expression
@@ -20,9 +17,6 @@ keywords:
   - Python
   - scverse
 abstract: >-
-  DUET (Detection-Expression Unified Test) implements the MAST-style two-part
-  hurdle test for single-cell differential expression in NumPy/SciPy, operating
-  directly on sparse AnnData objects without an R toolchain. It reproduces MAST's
-  coefficients and gene ranking while running two orders of magnitude faster on
-  the two-group design, and reports an underflow-safe -log10 p that preserves
-  gene rankings lost to double-precision underflow at realistic cell counts.
+  DUET provides two-part hurdle testing and donor-level pseudobulk analysis in
+  Python, with underflow-safe log-scale significance. The publication V4
+  package includes saved evidence and documents statistical and data limitations.

@@ -1,0 +1,25 @@
+dataset,package,k,overlap_p_vs_statistic_min,overlap_p_vs_statistic_median,overlap_p_vs_statistic_max,p_ranked_topk_jaccard_across_orders_min,statistic_ranked_topk_identical_across_orders
+kang,DUET,20,2,4.5,7,0.08108,True
+kang,DUET,100,100,100,100,1,True
+kang,DUET,500,500,500,500,1,True
+kang,Scanpy wilcoxon,20,20,20,20,1,True
+kang,Scanpy wilcoxon,100,100,100,100,1,True
+kang,Scanpy wilcoxon,500,500,500,500,1,False
+kang,diffxpy,20,0,0.5,2,0,True
+kang,diffxpy,100,9,12,14,0.03627,True
+kang,diffxpy,500,253,261,281,0.3333,True
+kang,MAST,20,2,4.5,7,0.08108,True
+kang,MAST,100,100,100,100,1,True
+kang,MAST,500,500,500,500,1,True
+pancreas,DUET,20,0,0.5,3,0.02564,True
+pancreas,DUET,100,12,16,17,0.06952,True
+pancreas,DUET,500,396,399.5,402,0.6447,False
+pancreas,Scanpy wilcoxon,20,5,5,5,1,True
+pancreas,Scanpy wilcoxon,100,22,22,22,1,True
+pancreas,Scanpy wilcoxon,500,500,500,500,1,True
+pancreas,diffxpy,20,1,1.5,2,0,False
+pancreas,diffxpy,100,7,11,24,0,False
+pancreas,diffxpy,500,40,46.5,55,0.02987,False
+pancreas,MAST,20,0,0.5,3,0,True
+pancreas,MAST,100,13,17,19,0.08108,True
+pancreas,MAST,500,428,431,433,0.7483,False

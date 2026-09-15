@@ -1,0 +1,2 @@
+method,celltype,comparison,gene,pvalue,fdr,log2fc,neglog10p,stat,n_ref,n_test,tested,skip_reason
+DUET,CD14+ Monocytes,ctrl_vs_stim,IFIT3,0.0,0.0,4.87368858479352,1510.493514517061,6956.07969918234,2932,2765,True,

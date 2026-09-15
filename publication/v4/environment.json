@@ -1,0 +1,82 @@
+{
+  "collected_utc": "2026-09-14T15:15:13+00:00",
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "cpu": "Intel(R) Core(TM) i9-14900K",
+  "cpu_cores": {
+    "physical": 24,
+    "logical": 32
+  },
+  "ram_gb": 68.4,
+  "blas": [
+    {
+      "user_api": "blas",
+      "internal_api": "openblas",
+      "num_threads": "24",
+      "version": "0.3.27",
+      "threading_layer": "pthreads"
+    },
+    {
+      "user_api": "blas",
+      "internal_api": "openblas",
+      "num_threads": "24",
+      "version": "0.3.27.dev",
+      "threading_layer": "pthreads"
+    }
+  ],
+  "thread_env": {
+    "OMP_NUM_THREADS": "",
+    "MKL_NUM_THREADS": "",
+    "OPENBLAS_NUM_THREADS": "",
+    "NUMEXPR_NUM_THREADS": ""
+  },
+  "git": {
+    "commit": "1ad7eaef9d65a32134a499c5ea01f831c534f179",
+    "uncommitted_changes": true,
+    "changed_files": [
+      "M duet/core.py",
+      " M duet/pseudobulk.py",
+      " M scripts/arm_offset.py",
+      " M scripts/fdr_scale_diag.py",
+      " M scripts/run_de_comparison.py",
+      " M scripts/simulate_replicates.R"
+    ]
+  },
+  "packages": {
+    "numpy": "2.0.2",
+    "scipy": "1.14.0",
+    "pandas": "2.2.3",
+    "anndata": "0.12.10",
+    "scanpy": "1.12",
+    "sklearn": "1.8.0",
+    "statsmodels": "0.14.6",
+    "pydeseq2": "0.5.4",
+    "diffxpy": "0.7.4",
+    "matplotlib": "3.9.0",
+    "h5py": "3.15.1",
+    "mpmath": "1.3.0",
+    "psutil": "6.0.0",
+    "threadpoolctl": "3.5.0",
+    "duet": "1.0.0"
+  },
+  "R": [
+    "R version 4.5.0 (2025-04-11 ucrt)"
+  ],
+  "R_blas_lapack": [
+    "BLAS: R internal reference BLAS",
+    "LAPACK: 3.12.1"
+  ],
+  "R_packages": {
+    "MAST": "1.33.0",
+    "DESeq2": "1.48.2",
+    "muscat": "1.22.0",
+    "muscData": "1.22.0",
+    "SingleCellExperiment": "1.30.1",
+    "Matrix": "1.7.3",
+    "lme4": "2.0.6",
+    "glmmTMB": "1.1.14",
+    "GLIMES": "0.1.0"
+  },
+  "provenance_note": "Historical analysis environment; recorded git revision had uncommitted changes. V4 reuses saved results, not new fits."
+}

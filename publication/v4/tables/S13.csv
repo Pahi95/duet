@@ -1,0 +1,16 @@
+experiment,dataset,celltype,method,n,rejection_pct,share_splits_any,elapsed_s_median
+null (glimes_poisson+glimes_binomial),crowell,Astrocytes,DESeq2-pseudobulk,3,0,0,
+null (glimes_poisson+glimes_binomial),crowell,Astrocytes,DUET,3,50.32,1,
+null (glimes_poisson+glimes_binomial),crowell,Astrocytes,DUET+PB,3,0,0,
+null (glimes_poisson+glimes_binomial),crowell,Astrocytes,glimes_binomial,3,0.01179,0.6667,223.7
+null (glimes_poisson+glimes_binomial),crowell,Astrocytes,glimes_poisson,3,0,0,235.6
+null (glimes_poisson+glimes_binomial),kang,CD14+ Monocytes,DESeq2-pseudobulk,35,0.05272,0.3714,
+null (glimes_poisson+glimes_binomial),kang,CD14+ Monocytes,DUET,35,4.463,1,
+null (glimes_poisson+glimes_binomial),kang,CD14+ Monocytes,DUET+PB,35,0.01513,0.3714,
+null (glimes_poisson+glimes_binomial),kang,CD14+ Monocytes,glimes_binomial,35,0.0701,0.4857,282
+null (glimes_poisson+glimes_binomial),kang,CD14+ Monocytes,glimes_poisson,35,0,0,295
+null (glimes_poisson+glimes_binomial),pancreas,Ductal cell,DESeq2-pseudobulk,15,0.3235,1,
+null (glimes_poisson+glimes_binomial),pancreas,Ductal cell,DUET,15,23.98,1,
+null (glimes_poisson+glimes_binomial),pancreas,Ductal cell,DUET+PB,15,0.1075,1,
+null (glimes_poisson+glimes_binomial),pancreas,Ductal cell,glimes_binomial,15,0.1139,0.6,998.4
+null (glimes_poisson+glimes_binomial),pancreas,Ductal cell,glimes_poisson,15,0,0,1034

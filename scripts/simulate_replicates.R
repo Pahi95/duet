@@ -38,7 +38,10 @@ for (r in seq_len(nrep)) {
   seed <- 100L + r
   outdir <- file.path(inputs, "data", sprintf("sim_rep%02d", r))
   dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-  if (file.exists(file.path(outdir, "counts.mtx"))) {
+  # seed.txt is written last, so it marks a complete replicate (MO task 16 also asks
+  # for the seed to be recorded). A directory without it was interrupted mid-write and
+  # is regenerated from the same seed.
+  if (file.exists(file.path(outdir, "seed.txt"))) {
     cat(sprintf("[sim] rep %d already present, skipping\n", r)); next
   }
   set.seed(seed)
@@ -52,6 +55,7 @@ for (r in seq_len(nrep)) {
               sep = "\t", quote = FALSE, row.names = FALSE)
   writeLines(rownames(sim), file.path(outdir, "genes.txt"))
   writeLines(colnames(sim), file.path(outdir, "cells.txt"))
+  writeLines(as.character(seed), file.path(outdir, "seed.txt"))
   cat(sprintf("[sim]   -> %s  (%s)\n", outdir,
               paste(table(metadata(sim)$gene_info$category), collapse = "/")))
 }

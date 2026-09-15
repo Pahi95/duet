@@ -1,14 +1,12 @@
 {
   "title": "DUET: fast two-part hurdle testing for single-cell differential expression in Python",
-  "description": "<p>DUET (Detection-Expression Unified Test) is a from-scratch implementation of the MAST-style two-part hurdle test for single-cell differential expression: a logistic detection model and a Gaussian positive-expression model whose likelihood-ratio statistics are summed into a single chi-squared test.</p><p>It operates directly on sparse AnnData objects with no R toolchain and no disk round-trip. On the two-group design without covariates it fits 117x faster than R MAST at 11,106 cells and 149x at 23,895 cells, in substantially less memory, while reproducing MAST's coefficients and gene ranking. It additionally reports an underflow-safe -log10 p, recovering gene rankings that MAST, diffxpy and scanpy lose to double-precision underflow at realistic cell counts.</p>",
+  "description": "DUET implements cell-level two-part hurdle testing and a donor-level pseudobulk arm in Python. The moderated continuous component differs from MAST. Underflow-safe log-scale values preserve ranking information. Publication V4 includes saved simulation results, benchmarks, scripts and explicit limitations; no universal FDR or category-sensitivity advantage is claimed.",
   "upload_type": "software",
   "license": "MIT",
   "access_right": "open",
   "creators": [
     {
-      "name": "Pachinger-Molnár, Bence",
-      "affiliation": "PLACEHOLDER — set your affiliation, or delete this line",
-      "orcid": "0000-0000-0000-0000"
+      "name": "Pachinger-Molnár, Bence"
     }
   ],
   "keywords": [

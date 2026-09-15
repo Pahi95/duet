@@ -47,6 +47,7 @@ __all__ = ["aggregate_pseudobulk", "run_pseudobulk", "combine_calls",
 # a gene is called on the sample-level arm; the cell-level arm only ranks
 CALL_SIGNIFICANT = "significant"
 CALL_RANKED_ONLY = "ranked_only"
+CALL_DIRECTION_CONFLICT = "direction_conflict"
 CALL_NS = "ns"
 CALL_UNTESTED = "not_tested"
 
@@ -109,7 +110,11 @@ def aggregate_pseudobulk(
     genes = adata.var_names.astype(str).to_numpy()
 
     rows, meta_rows = [], []
-    for d in pd.unique(donors):
+    # Sorted, not in order of first appearance: PyDESeq2's fit of a paired
+    # ~donor + condition design depends on the sample order (on Kang CD4 T cells a
+    # shuffle moved one gene's -log10 p from 13 to 34), so a fixed order keeps the
+    # result independent of how the cells happen to be ordered.
+    for d in sorted(pd.unique(donors)):
         for lab in (str(ref_label), str(test_label)):
             m = (donors == d) & (cond == lab)
             n = int(m.sum())
@@ -148,12 +153,16 @@ def run_pseudobulk(
     min_donors_per_group: int = 2,
     min_gene_counts: int = 10,
     paired: bool = False,
+    n_cpus: int | None = None,
 ):
     """DESeq2 on pseudobulk profiles. One row per gene.
 
     `paired=True` fits ``~donor + condition`` instead of ``~condition``, which is
     the stronger model when every donor contributes to both arms. It is not the
     default because it is only estimable in that design.
+
+    `n_cpus` is passed to PyDESeq2, which otherwise starts one worker process per
+    CPU; set it to 1 when this runs inside parallel jobs.
     """
     try:
         from pydeseq2.dds import DeseqDataSet
@@ -201,10 +210,10 @@ def run_pseudobulk(
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        dds = DeseqDataSet(counts=pb, metadata=meta, design=design, quiet=True)
+        dds = DeseqDataSet(counts=pb, metadata=meta, design=design, quiet=True, n_cpus=n_cpus)
         dds.deseq2()
         st = DeseqStats(dds, contrast=["condition", str(test_label), str(ref_label)],
-                        quiet=True)
+                        quiet=True, n_cpus=n_cpus)
         st.summary()
 
     r = st.results_df.reset_index()
@@ -232,13 +241,22 @@ def run_pseudobulk(
     return res
 
 
-def combine_calls(duet_df, pb_df, *, alpha: float = 0.05):
+def combine_calls(duet_df, pb_df, *, alpha: float = 0.05, require_same_direction: bool = True):
     """Join the cell-level and sample-level arms into one table.
 
-    Adds `call`, which is the recommendation made operational: a gene is
-    `significant` only if the sample-level arm supports it, `ranked_only` if the
-    hurdle ranks it highly but pseudobulk does not, and `ns` otherwise. The
-    hurdle's own `fdr` is kept, but it is not what decides the call.
+    Adds `call`, the recommendation made operational:
+
+    ``significant``        the sample-level arm supports the gene (pb_padj < alpha)
+                           and, with ``require_same_direction``, its fold change has
+                           the same sign as the hurdle's coefficient
+    ``direction_conflict`` the sample-level arm is significant but the two arms
+                           disagree on the direction -- not counted as a discovery
+    ``ranked_only``        the hurdle ranks the gene highly, pseudobulk does not
+    ``ns``                 neither arm
+
+    The hurdle's own `fdr` is kept, but it never decides the call. The direction
+    check is part of the rule stated in the manuscript: a gene called from opposite
+    directions by the two arms is not evidence for either.
     """
     key = ["gene", "celltype"]
     for name, df in (("duet", duet_df), ("pseudobulk", pb_df)):
@@ -252,8 +270,16 @@ def combine_calls(duet_df, pb_df, *, alpha: float = 0.05):
     duet_sig = out["fdr"].notna() & (out["fdr"] < alpha)
     tested = out.get("pb_tested", pd.Series(False, index=out.index)).fillna(False)
 
-    call = np.where(pb_sig, CALL_SIGNIFICANT,
-                    np.where(duet_sig, CALL_RANKED_ONLY, CALL_NS))
+    coef = out["coef"] if "coef" in out.columns else out.get("coef_continuous")
+    if require_same_direction and coef is not None:
+        same_dir = np.sign(out["pb_log2FC"].to_numpy(float)) == np.sign(np.asarray(coef, dtype=float))
+    else:
+        same_dir = np.ones(len(out), dtype=bool)
+    sig = pb_sig.to_numpy(bool) & same_dir
+
+    call = np.where(sig, CALL_SIGNIFICANT,
+                    np.where(pb_sig.to_numpy(bool), CALL_DIRECTION_CONFLICT,
+                             np.where(duet_sig, CALL_RANKED_ONLY, CALL_NS)))
     out["call"] = np.where(tested.to_numpy(bool), call, CALL_UNTESTED)
     return out
 
@@ -270,9 +296,11 @@ def run_duet_pseudobulk(
     counts_layer: str = "counts",
     alpha: float = 0.05,
     paired: bool = False,
+    require_same_direction: bool = True,
     min_cells_per_donor: int = 10,
     min_donors_per_group: int = 2,
     min_gene_counts: int = 10,
+    n_cpus: int | None = None,
     output_name: str = "duet_pseudobulk.csv",
     **duet_kwargs,
 ):
@@ -323,18 +351,19 @@ def run_duet_pseudobulk(
             counts_layer=counts_layer, celltype=ct,
             min_cells_per_donor=min_cells_per_donor,
             min_donors_per_group=min_donors_per_group,
-            min_gene_counts=min_gene_counts, paired=paired))
+            min_gene_counts=min_gene_counts, paired=paired, n_cpus=n_cpus))
     pb = pd.concat(frames, ignore_index=True)
 
-    combined = combine_calls(cell, pb, alpha=alpha)
+    combined = combine_calls(cell, pb, alpha=alpha, require_same_direction=require_same_direction)
     out = out_dir / output_name
     combined.to_csv(out, index=False)
 
     n_sig = int((combined["call"] == CALL_SIGNIFICANT).sum())
     n_rank = int((combined["call"] == CALL_RANKED_ONLY).sum())
+    n_conf = int((combined["call"] == CALL_DIRECTION_CONFLICT).sum())
     print(f"[duet+pb] {out}")
     print(f"[duet+pb] {n_sig} significant (sample-level), "
-          f"{n_rank} ranked_only (cell-level only)")
+          f"{n_rank} ranked_only (cell-level only), {n_conf} direction conflicts")
     try:
         os.unlink(duet_path)
     except OSError:

@@ -35,7 +35,8 @@ warnings.filterwarnings("ignore")
 
 HERE = Path(__file__).resolve().parent.parent   # project root; this file is in scripts/
 INPUTS = Path(os.environ.get("DUET_INPUTS", HERE.parent / "inputs"))
-sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ for sibling imports  # so `from duet import ...` works
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/ for sibling imports
+sys.path.insert(0, str(HERE))                             # project root, so `from duet import ...` works
 
 COMPARISON = "Reference_vs_pancreas"
 HARMON = ["method", "celltype", "comparison", "gene", "pvalue", "fdr", "log2fc",
@@ -45,6 +46,9 @@ LN10 = math.log(10.0)
 # -log10 of the smallest positive float64 (~5e-324): the hard floor a p-value can
 # reach before it is stored as exactly 0.0.
 NLP_FLOOR = 323.0
+# PyDESeq2 starts one worker process per CPU unless told otherwise; parallel callers
+# (scripts/_runtime.py, sim_calls.py) set DUET_N_CPUS=1 so the pools do not multiply.
+PYDESEQ2_N_CPUS = int(os.environ.get("DUET_N_CPUS", "0")) or None
 
 
 def _nlp_from_normal(pvalue, z):
@@ -270,21 +274,27 @@ def run_deseq2(ad_ct, celltype, *, counts_layer, sample_col, condition, ref_labe
     # one condition are unaffected: the grouping is then identical.
     rows, smeta = [], []
     genes = ad_ct.var_names.astype(str).to_numpy()
-    for s in pd.unique(samples):
+    # sorted: PyDESeq2's paired fit depends on sample order (see duet.pseudobulk)
+    for s in sorted(pd.unique(samples)):
         for lab in (ref_label, test_label):
             m = (samples == s) & (cond_by_cell == lab)
             if int(m.sum()) < min_cells_per_sample:
                 continue
             rows.append(np.asarray(counts[m].sum(axis=0)).ravel())
             # name stays unique when a sample appears in both conditions
-            smeta.append((s if (samples == s).sum() == m.sum() else f"{s}|{lab}", lab))
+            smeta.append((s if (samples == s).sum() == m.sum() else f"{s}|{lab}", lab, s))
     if len(rows) < 2:
         return _empty("DESeq2", celltype, n_ref, n_test, "too_few_pseudobulk_samples")
     pb = pd.DataFrame(np.rint(np.vstack(rows)).astype(int),
-                      index=[s for s, _ in smeta], columns=genes)
-    meta = pd.DataFrame({"condition": pd.Categorical([c for _, c in smeta],
-                                                     categories=[ref_label, test_label])},
+                      index=[s for s, _, _ in smeta], columns=genes)
+    meta = pd.DataFrame({"condition": pd.Categorical([c for _, c, _ in smeta],
+                                                     categories=[ref_label, test_label]),
+                         "donor": [d for _, _, d in smeta]},
                         index=pb.index)
+    # ~donor + condition only when every donor contributes to both conditions (Kang);
+    # otherwise the donor term would be collinear with the condition (MO task 9)
+    per_donor = meta.groupby("donor")["condition"].nunique()
+    design = "~donor + condition" if (per_donor == 2).all() and len(per_donor) > 1 else "~condition"
     n_ref_s = int((meta["condition"] == ref_label).sum())
     n_test_s = int((meta["condition"] == test_label).sum())
     if n_ref_s < min_samples_per_group or n_test_s < min_samples_per_group:
@@ -295,9 +305,10 @@ def run_deseq2(ad_ct, celltype, *, counts_layer, sample_col, condition, ref_labe
     if pb.shape[1] == 0:
         return _empty("DESeq2", celltype, n_ref, n_test, "no_genes_after_count_filter")
 
-    dds = DeseqDataSet(counts=pb, metadata=meta, design="~condition", quiet=True)
+    _log(f"  DESeq2 pseudobulk: {len(meta)} samples, design {design}")
+    dds = DeseqDataSet(counts=pb, metadata=meta, design=design, quiet=True, n_cpus=PYDESEQ2_N_CPUS)
     dds.deseq2()
-    st = DeseqStats(dds, contrast=["condition", test_label, ref_label], quiet=True)
+    st = DeseqStats(dds, contrast=["condition", test_label, ref_label], quiet=True, n_cpus=PYDESEQ2_N_CPUS)
     st.summary()
     r = st.results_df.reset_index().rename(columns={"index": "gene"})
     gcol = "gene" if "gene" in r.columns else r.columns[0]
@@ -550,9 +561,12 @@ def main(argv=None):
     except Exception:
         _LOG_FH = None
 
-    _log(f"loading (backed): {args.h5ad}")
-    A = ad.read_h5ad(args.h5ad, backed="r")
-    obs = A.obs
+    # obs only; each cell type's rows are read on demand below. (Backed mode would
+    # still pull every layer into memory -- several GB for the pancreas object.)
+    from _runtime import load_rows, maybe_background, read_obs
+    maybe_background()
+    _log(f"loading obs: {args.h5ad}")
+    obs = read_obs(args.h5ad)
     samp = obs[args.sample_col].astype(str)
     condition_all = np.where(samp.str.contains(args.ref_label, case=False, na=False),
                              args.ref_label, args.test_label)
@@ -590,12 +604,8 @@ def main(argv=None):
         mask = ct_labels == ct
         _log(f"=== cell type '{ct}': {int(mask.sum())} cells -> materializing subset ===")
         # materialize ONLY X + counts for this cell type (the DE methods need nothing
-        # else). Skips the heavy obsm (X_cnv/X_scVI/ora_*) + obsp (cell x cell graphs)
-        # that A[mask].to_memory() would otherwise pull into RAM.
-        view = A[mask]
-        ad_ct = ad.AnnData(X=view.X, obs=view.obs.copy(), var=A.var.copy())
-        if args.counts_layer in A.layers:
-            ad_ct.layers[args.counts_layer] = view.layers[args.counts_layer]
+        # else); obsm/obsp (X_cnv, X_scVI, graphs) are never read.
+        ad_ct = load_rows(args.h5ad, mask, layers=(args.counts_layer,))
         ad_ct.obs["condition"] = condition_all[mask]
         if args.max_genes and ad_ct.n_vars > args.max_genes:
             # smoke-test cap: keep the TOP-expressed genes (representative; the first

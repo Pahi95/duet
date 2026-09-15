@@ -22,9 +22,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
-# The engine itself imports only numpy, scipy and pandas; anndata is what the
-# public API takes as input, and anndata >= 0.12 is what sets the 3.11 floor --
-# not any syntax in DUET.
+# Python 3.11 is the supported project floor; dependency minima are listed below.
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=1.24",
@@ -38,8 +36,8 @@ dependencies = [
 # progress and memory reporting. All three degrade gracefully if absent.
 extra = ["statsmodels>=0.14", "tqdm", "psutil"]
 # the sample-level arm: aggregation is ours, the test is delegated
-pseudobulk = ["pydeseq2>=0.4"]
-test = ["pytest>=7", "scikit-learn>=1.3", "pydeseq2>=0.4"]
+pseudobulk = ["pydeseq2>=0.5"]
+test = ["pytest>=7", "scikit-learn>=1.3", "pydeseq2>=0.5"]
 
 [project.urls]
 Homepage = "https://github.com/Pahi95/duet"

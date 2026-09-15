@@ -1,0 +1,11 @@
+Dataset,Cell type,Cells,Genes,log2FC r,Sign %,−log10 p Spearman,Jaccard
+Kang,B cells,"2,651","1,523",1.0000,100.00,0.9998,0.8475
+Kang,CD14+ Monocytes,"5,697","1,954",1.0000,100.00,1.0000,0.9900
+Kang,CD4 T cells,"11,238","1,293",1.0000,100.00,1.0000,0.9501
+Crowell,Astrocytes,"1,740","2,987",1.0000,100.00,0.9970,0.9441
+Crowell,Excit. Neuron,"16,622","5,842",1.0000,99.98,1.0000,0.9996
+Crowell,Inhib. Neuron,"3,382","5,821",1.0000,99.97,0.9994,0.9693
+Pancreas,Ductal cell,"8,020","9,058",1.0000,100.00,1.0000,1.0000
+Pancreas,Endothelial cell,"5,332","7,436",1.0000,100.00,0.9998,0.9997
+Pancreas,Stellate cell,"3,741","7,129",1.0000,100.00,1.0000,0.9835
+Simulation (median of 100),cluster1,"24,000","3,994",1.0000,100.00,0.9999,0.9953

@@ -135,3 +135,10 @@ htmlcov/
 *.egg-info/
 build/
 dist/
+
+# Publication reproducibility scripts are versioned.
+!scripts/*.py
+!scripts/*.R
+
+# Curated, checksum-listed publication evidence.
+!publication/v4/**

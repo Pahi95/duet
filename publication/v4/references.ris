@@ -1,0 +1,476 @@
+TY  - JOUR
+AU  - Kharchenko, PV
+AU  - Silberstein, L
+AU  - Scadden, DT
+TI  - Bayesian approach to single-cell differential expression analysis
+JO  - Nature Methods
+PY  - 2014
+VL  - 11
+SP  - 740
+EP  - 742
+DO  - 10.1038/nmeth.2967
+UR  - https://doi.org/10.1038/nmeth.2967
+ER  -
+
+TY  - JOUR
+AU  - Svensson, V
+TI  - Droplet scRNA-seq is not zero-inflated
+JO  - Nature Biotechnology
+PY  - 2020
+VL  - 38
+SP  - 147
+EP  - 150
+DO  - 10.1038/s41587-019-0379-5
+UR  - https://doi.org/10.1038/s41587-019-0379-5
+ER  -
+
+TY  - JOUR
+AU  - Jiang, R
+AU  - Sun, T
+AU  - Song, D
+AU  - Li, JJ
+TI  - Statistics or biology: the zero-inflation controversy about scRNA-seq data
+JO  - Genome Biology
+PY  - 2022
+VL  - 23
+SP  - 31
+DO  - 10.1186/s13059-022-02601-5
+UR  - https://doi.org/10.1186/s13059-022-02601-5
+ER  -
+
+TY  - JOUR
+AU  - Kim, TH
+AU  - Zhou, X
+AU  - Chen, M
+TI  - Demystifying "drop-outs" in single-cell UMI data
+JO  - Genome Biology
+PY  - 2020
+VL  - 21
+SP  - 196
+DO  - 10.1186/s13059-020-02096-y
+UR  - https://doi.org/10.1186/s13059-020-02096-y
+ER  -
+
+TY  - JOUR
+AU  - Finak, G
+AU  - McDavid, A
+AU  - Yajima, M
+AU  - Deng, J
+AU  - Gersuk, V
+AU  - Shalek, AK
+AU  - Slichter, CK
+AU  - Miller, HW
+AU  - McElrath, MJ
+AU  - Prlic, M
+AU  - Linsley, P
+AU  - Gottardo, R
+TI  - MAST: a flexible statistical framework for assessing transcriptional changes and characterizing heterogeneity in single-cell RNA sequencing data
+JO  - Genome Biology
+PY  - 2015
+VL  - 16
+SP  - 278
+DO  - 10.1186/s13059-015-0844-5
+UR  - https://doi.org/10.1186/s13059-015-0844-5
+ER  -
+
+TY  - JOUR
+AU  - Wang, T
+AU  - Li, B
+AU  - Nelson, CE
+AU  - Nabavi, S
+TI  - Comparative analysis of differential gene expression analysis tools for single-cell RNA sequencing data
+JO  - BMC Bioinformatics
+PY  - 2019
+VL  - 20
+SP  - 40
+DO  - 10.1186/s12859-019-2599-6
+UR  - https://doi.org/10.1186/s12859-019-2599-6
+ER  -
+
+TY  - JOUR
+AU  - Soneson, C
+AU  - Robinson, MD
+TI  - Bias, robustness and scalability in single-cell differential expression analysis
+JO  - Nature Methods
+PY  - 2018
+VL  - 15
+SP  - 255
+EP  - 261
+DO  - 10.1038/nmeth.4612
+UR  - https://doi.org/10.1038/nmeth.4612
+ER  -
+
+TY  - JOUR
+AU  - Das, S
+AU  - Rai, A
+AU  - Merchant, ML
+AU  - Cave, MC
+AU  - Rai, SN
+TI  - A comprehensive survey of statistical approaches for differential expression analysis in single-cell RNA sequencing studies
+JO  - Genes
+PY  - 2021
+VL  - 12
+SP  - 1947
+DO  - 10.3390/genes12121947
+UR  - https://doi.org/10.3390/genes12121947
+ER  -
+
+TY  - JOUR
+AU  - Nguyen, HCT
+AU  - Baik, B
+AU  - Yoon, S
+AU  - Park, T
+AU  - Nam, D
+TI  - Benchmarking integration of single-cell differential expression
+JO  - Nature Communications
+PY  - 2023
+VL  - 14
+SP  - 1570
+DO  - 10.1038/s41467-023-37126-3
+UR  - https://doi.org/10.1038/s41467-023-37126-3
+ER  -
+
+TY  - JOUR
+AU  - Cui, T
+AU  - Wang, T
+TI  - A comprehensive assessment of hurdle and zero-inflated models for single cell RNA-sequencing analysis
+JO  - Briefings in Bioinformatics
+PY  - 2023
+VL  - 24
+SP  - bbad272
+DO  - 10.1093/bib/bbad272
+UR  - https://doi.org/10.1093/bib/bbad272
+ER  -
+
+TY  - JOUR
+AU  - Virshup, I
+AU  - Bredikhin, D
+AU  - Heumos, L
+AU  - Palla, G
+AU  - Sturm, G
+AU  - Gayoso, A
+AU  - Kats, I
+AU  - Koutrouli, M
+AU  - Scverse Community
+AU  - Berger, B
+AU  - Pe'er, D
+AU  - Regev, A
+AU  - Teichmann, SA
+AU  - Finotello, F
+AU  - Wolf, FA
+AU  - Yosef, N
+AU  - Stegle, O
+AU  - Theis, FJ
+TI  - The scverse project provides a computational ecosystem for single-cell omics data analysis
+JO  - Nature Biotechnology
+PY  - 2023
+VL  - 41
+SP  - 604
+EP  - 606
+DO  - 10.1038/s41587-023-01733-8
+UR  - https://doi.org/10.1038/s41587-023-01733-8
+ER  -
+
+TY  - COMP
+AU  - Fischer, DS
+AU  - Holzlwimmer, FR
+TI  - diffxpy: fast and scalable differential expression analysis on single-cell RNA-seq data
+PY  - 2019
+UR  - https://github.com/theislab/diffxpy
+PB  - theislab
+ER  -
+
+TY  - JOUR
+AU  - Wolf, FA
+AU  - Angerer, P
+AU  - Theis, FJ
+TI  - SCANPY: large-scale single-cell gene expression data analysis
+JO  - Genome Biology
+PY  - 2018
+VL  - 19
+SP  - 15
+DO  - 10.1186/s13059-017-1382-0
+UR  - https://doi.org/10.1186/s13059-017-1382-0
+ER  -
+
+TY  - JOUR
+AU  - Squair, JW
+AU  - Gautier, M
+AU  - Kathe, C
+AU  - Anderson, MA
+AU  - James, ND
+AU  - Hutson, TH
+AU  - Hudelle, R
+AU  - Qaiser, T
+AU  - Matson, KJE
+AU  - Barraud, Q
+AU  - Levine, AJ
+AU  - La Manno, G
+AU  - Skinnider, MA
+AU  - Courtine, G
+TI  - Confronting false discoveries in single-cell differential expression
+JO  - Nature Communications
+PY  - 2021
+VL  - 12
+SP  - 5692
+DO  - 10.1038/s41467-021-25960-2
+UR  - https://doi.org/10.1038/s41467-021-25960-2
+ER  -
+
+TY  - JOUR
+AU  - Zimmerman, KD
+AU  - Espeland, MA
+AU  - Langefeld, CD
+TI  - A practical solution to pseudoreplication bias in single-cell studies
+JO  - Nature Communications
+PY  - 2021
+VL  - 12
+SP  - 738
+DO  - 10.1038/s41467-021-21038-1
+UR  - https://doi.org/10.1038/s41467-021-21038-1
+ER  -
+
+TY  - JOUR
+AU  - Murphy, AE
+AU  - Skene, NG
+TI  - A balanced measure shows superior performance of pseudobulk methods in single-cell RNA-sequencing analysis
+JO  - Nature Communications
+PY  - 2022
+VL  - 13
+SP  - 7851
+DO  - 10.1038/s41467-022-35519-4
+UR  - https://doi.org/10.1038/s41467-022-35519-4
+ER  -
+
+TY  - JOUR
+AU  - Junttila, S
+AU  - Smolander, J
+AU  - Elo, LL
+TI  - Benchmarking methods for detecting differential states between conditions from multi-subject single-cell RNA-seq data
+JO  - Briefings in Bioinformatics
+PY  - 2022
+VL  - 23
+SP  - bbac286
+DO  - 10.1093/bib/bbac286
+UR  - https://doi.org/10.1093/bib/bbac286
+ER  -
+
+TY  - JOUR
+AU  - Wu, C-H
+AU  - Zhou, X
+AU  - Chen, M
+TI  - Exploring and mitigating shortcomings in single-cell differential expression analysis with a new statistical paradigm
+JO  - Genome Biology
+PY  - 2025
+VL  - 26
+SP  - 58
+DO  - 10.1186/s13059-025-03525-6
+UR  - https://doi.org/10.1186/s13059-025-03525-6
+ER  -
+
+TY  - JOUR
+AU  - Smyth, GK
+TI  - Linear models and empirical Bayes methods for assessing differential expression in microarray experiments
+JO  - Statistical Applications in Genetics and Molecular Biology
+PY  - 2004
+VL  - 3
+SP  - Article 3
+DO  - 10.2202/1544-6115.1027
+UR  - https://doi.org/10.2202/1544-6115.1027
+ER  -
+
+TY  - JOUR
+AU  - Benjamini, Y
+AU  - Hochberg, Y
+TI  - Controlling the false discovery rate: a practical and powerful approach to multiple testing
+JO  - Journal of the Royal Statistical Society: Series B
+PY  - 1995
+VL  - 57
+SP  - 289
+EP  - 300
+DO  - 10.1111/j.2517-6161.1995.tb02031.x
+UR  - https://doi.org/10.1111/j.2517-6161.1995.tb02031.x
+ER  -
+
+TY  - JOUR
+AU  - Hafemeister, C
+AU  - Satija, R
+TI  - Normalization and variance stabilization of single-cell RNA-seq data using regularized negative binomial regression
+JO  - Genome Biology
+PY  - 2019
+VL  - 20
+SP  - 296
+DO  - 10.1186/s13059-019-1874-1
+UR  - https://doi.org/10.1186/s13059-019-1874-1
+ER  -
+
+TY  - JOUR
+AU  - Ahlmann-Eltze, C
+AU  - Huber, W
+TI  - Comparison of transformations for single-cell RNA-seq data
+JO  - Nature Methods
+PY  - 2023
+VL  - 20
+SP  - 665
+EP  - 672
+DO  - 10.1038/s41592-023-01814-1
+UR  - https://doi.org/10.1038/s41592-023-01814-1
+ER  -
+
+TY  - JOUR
+AU  - Virshup, I
+AU  - Rybakov, S
+AU  - Theis, FJ
+AU  - Angerer, P
+AU  - Wolf, FA
+TI  - anndata: access and store annotated data matrices
+JO  - Journal of Open Source Software
+PY  - 2024
+VL  - 9
+SP  - 4371
+DO  - 10.21105/joss.04371
+UR  - https://doi.org/10.21105/joss.04371
+ER  -
+
+TY  - JOUR
+AU  - Kaestner, KH
+AU  - Powers, AC
+AU  - Naji, A
+AU  - HPAP Consortium
+AU  - Atkinson, MA
+TI  - NIH initiative to improve understanding of the pancreas, islet, and autoimmunity in type 1 diabetes: the Human Pancreas Analysis Program (HPAP)
+JO  - Diabetes
+PY  - 2019
+VL  - 68
+SP  - 1394
+EP  - 1402
+DO  - 10.2337/db19-0058
+UR  - https://doi.org/10.2337/db19-0058
+ER  -
+
+TY  - JOUR
+AU  - Shapira, SN
+AU  - Naji, A
+AU  - Atkinson, MA
+AU  - Powers, AC
+AU  - Kaestner, KH
+TI  - Understanding islet dysfunction in type 2 diabetes through multidimensional pancreatic phenotyping: the Human Pancreas Analysis Program
+JO  - Cell Metabolism
+PY  - 2022
+VL  - 34
+SP  - 1906
+EP  - 1913
+DO  - 10.1016/j.cmet.2022.09.013
+UR  - https://doi.org/10.1016/j.cmet.2022.09.013
+ER  -
+
+TY  - JOUR
+AU  - Fasolino, M
+AU  - Schwartz, GW
+AU  - Patil, AR
+AU  - Mongia, A
+AU  - Golson, ML
+AU  - Wang, YJ
+AU  - Morgan, A
+AU  - Naji, A
+AU  - Kaestner, KH
+AU  - Vahedi, G
+TI  - Single-cell multi-omics analysis of human pancreatic islets reveals novel cellular states in type 1 diabetes
+JO  - Nature Metabolism
+PY  - 2022
+VL  - 4
+SP  - 284
+EP  - 299
+DO  - 10.1038/s42255-022-00531-x
+UR  - https://doi.org/10.1038/s42255-022-00531-x
+ER  -
+
+TY  - JOUR
+AU  - Patil, AR
+AU  - Schug, J
+AU  - HPAP Consortium
+AU  - Naji, A
+AU  - Kaestner, KH
+AU  - Faryabi, RB
+AU  - Vahedi, G
+TI  - Single-cell expression profiling of islets generated by the Human Pancreas Analysis Program
+JO  - Nature Metabolism
+PY  - 2023
+VL  - 5
+SP  - 713
+EP  - 715
+DO  - 10.1038/s42255-023-00806-x
+UR  - https://doi.org/10.1038/s42255-023-00806-x
+ER  -
+
+TY  - JOUR
+AU  - Kang, HM
+AU  - Subramaniam, M
+AU  - Targ, S
+AU  - Nguyen, M
+AU  - Maliskova, L
+AU  - McCarthy, E
+AU  - Wan, E
+AU  - Wong, S
+AU  - Byrnes, L
+AU  - Lanata, CM
+AU  - Gate, RE
+AU  - Mostafavi, S
+AU  - Marson, A
+AU  - Zaitlen, N
+AU  - Criswell, LA
+AU  - Ye, CJ
+TI  - Multiplexed droplet single-cell RNA-sequencing using natural genetic variation
+JO  - Nature Biotechnology
+PY  - 2018
+VL  - 36
+SP  - 89
+EP  - 94
+DO  - 10.1038/nbt.4042
+UR  - https://doi.org/10.1038/nbt.4042
+ER  -
+
+TY  - JOUR
+AU  - Crowell, HL
+AU  - Soneson, C
+AU  - Germain, P-L
+AU  - Calini, D
+AU  - Collin, L
+AU  - Raposo, C
+AU  - Malhotra, D
+AU  - Robinson, MD
+TI  - muscat detects subpopulation-specific state transitions from multi-sample multi-condition single-cell transcriptomics data
+JO  - Nature Communications
+PY  - 2020
+VL  - 11
+SP  - 6077
+DO  - 10.1038/s41467-020-19894-4
+UR  - https://doi.org/10.1038/s41467-020-19894-4
+ER  -
+
+TY  - JOUR
+AU  - Love, MI
+AU  - Huber, W
+AU  - Anders, S
+TI  - Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2
+JO  - Genome Biology
+PY  - 2014
+VL  - 15
+SP  - 550
+DO  - 10.1186/s13059-014-0550-8
+UR  - https://doi.org/10.1186/s13059-014-0550-8
+ER  -
+
+TY  - JOUR
+AU  - Muzellec, B
+AU  - Telenczuk, M
+AU  - Cabeli, V
+AU  - Andreux, M
+TI  - PyDESeq2: a python package for bulk RNA-seq differential expression analysis
+JO  - Bioinformatics
+PY  - 2023
+VL  - 39
+SP  - btad547
+DO  - 10.1093/bioinformatics/btad547
+UR  - https://doi.org/10.1093/bioinformatics/btad547
+ER  -

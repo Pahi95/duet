@@ -1,0 +1,21 @@
+{
+  "tests": "58 passed in 7.77 seconds (local source identical to staged duet and tests)",
+  "archive_integrity": "four ZIPs passed CRC and path checks",
+  "audit_reproduction": "four CSVs agree within 1e-12 relative tolerance",
+  "main_metrics": "600 replicate/method records agree for confusion matrices, sensitivity, FDR, ROC-AUC and PR-AUC",
+  "python_syntax_files": 48,
+  "excluded_artifacts_check": "no pyc/log/bak/h5ad/rds/mtx or Word lock files",
+  "model_fits_rerun": false,
+  "limitations": [
+    "Historical pancreas joint UMI deduplication unverified",
+    "Historical CDR settings unmatched",
+    "Author fields and persistent archive identifier pending"
+  ],
+  "visual_review": "33 clean manuscript pages, 36 supplementary pages and 33 additions-marked pages rendered and inspected",
+  "document_checks": "clean and red paragraph text identical; five figures; no unresolved build tokens",
+  "retired_utilities": [
+    "scripts/make_all_panels.py",
+    "scripts/make_fig4.py"
+  ],
+  "citation_metadata": "removed fake ORCID and placeholder affiliation; manuscript author fields remain explicitly pending"
+}

@@ -1,0 +1,3 @@
+dataset,n_cells,n_reference,n_tested,n_at_old_cap,pct_at_old_cap,distinct_new_stats_among_capped,max_new_stat_continuous,spearman_within_capped,spearman_global,max_abs_change_uncapped,sig_calls_changed,top20_overlap_old_vs_new,top100_overlap_old_vs_new,top500_overlap_old_vs_new
+corrected,8020,2779,45486,110,0.242,110,7816,0.5277,1,0,0,18,84,458
+original,11106,5865,45486,128,0.281,128,8919,0.6686,1,0,0,14,77,480
