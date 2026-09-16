@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "duet-de"
-version = "1.0.0"
+version = "1.0.1"
 description = "Detection-Expression Unified Test: a two-part hurdle model for single-cell differential expression, in pure Python"
 readme = "README.md"
 license = { file = "LICENSE" }
