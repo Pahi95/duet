@@ -70,8 +70,8 @@ methods, so thresholds cannot be transferred without checking the scale.
 
 `scripts/` contains the analyses behind the DUET manuscript. They need the public input data
 (Kang et al. 2018 PBMCs, Crowell et al. 2020 mouse cortex via muscatData, and the pancreas input
-available from Zenodo as the analysis input: https://doi.org/10.5281/zenodo.22801671, to be placed at
-`inputs/PancreasCorrected.h5ad`) and, for the comparisons, R with MAST, DESeq2, muscat, edgeR, limma,
+available from Zenodo: https://doi.org/10.5281/zenodo.22801671, saved as `PancreasCorrected.h5ad` in the
+input directory, `DUET_INPUTS`, default `../inputs`) and, for the comparisons, R with MAST, DESeq2, muscat, edgeR, limma,
 lme4 and GLIMES. Results are written to `results/`, which is not versioned.
 `python scripts/make_all_results.py --dry-run` lists every step and its command.
 
