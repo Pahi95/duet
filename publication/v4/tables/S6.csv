@@ -1,6 +1,0 @@
-Method (version),Input and model,Unit of inference,Test statistic,FDR column,"BH gene universe, pancreas ductal cells"
-DUET 1.0.0 (Python),"log1p-normalized expression; logistic model on detection, Gaussian model on detected cells; ~1 + condition",cell,detection LRT plus χ²-equivalent moderated continuous statistic; χ² reference with active-component degrees of freedom,BH over tested genes within each cell type,"genes detected in ≥10% of cells of one group (9,772)"
-MAST 1.33.0 (R),"same normalized matrix; zlm(~condition), bayesglm, ebayes = TRUE",cell,"lrTest hurdle likelihood-ratio statistic, χ²","p.adjust(method = ""BH"") over returned genes","genes supplied (9,772); 9,058 returned with a p-value"
-"Scanpy 1.12, Wilcoxon",log1p-normalized expression,cell,"two-sided Wilcoxon rank-sum, normal approximation",BH (pvals_adj),"every gene in the object (59,537)"
-PyDESeq2 0.5.4 (pseudobulk),"raw counts summed per donor × condition; negative-binomial GLM, ~condition (~donor + condition for Kang)",donor,Wald test on the condition coefficient,BH with independent filtering and Cook's-distance outlier removal; filtered genes get padj = NA,"27,178 genes, of which 5,478 (20.2%) padj = NA"
-diffxpy 0.7.4,raw counts; negative-binomial GLM ~1 + condition,cell,Wald test on the condition coefficient,BH (statsmodels fdr_bh),"top 8,000 expressed genes, ≤5,000 cells per group"

@@ -61,23 +61,12 @@ effect directions. Other labels include `direction_conflict`, `ranked_only`,
 not the ratio of arithmetic mean counts. Effect-size definitions differ across
 methods, so thresholds cannot be transferred without checking the scale.
 
-## Manuscript and evidence
+## Analysis and validation scripts
 
-See [publication/v4](publication/v4/README.md) for the corrected working
-manuscript, figures, editable tables, saved simulation evidence, environment
-record, limits of reproducibility and results-only rebuild commands.
-
-The five-run covariate-free benchmark gave an end-to-end CPU ratio of 39–257
-on the historical pancreas input. Covariate timing settings were unmatched,
-so V4 makes no matched CDR speed claim. At separately calibrated thresholds,
-DESeq2 was more sensitive than DUET in every alternative simulation category.
-Pancreas comparisons are restricted to technical/descriptive evaluation because
-of source confounding and unverified molecular deduplication across library runs.
-
-The manuscript remains a working draft with author and archive fields to finish.
-Large raw matrices, private drafting notes, logs and temporary files are excluded.
-Existing older scripts remain historical utilities; V4's documented entry points
-and figure sources define the current publication outputs.
+The `scripts/` directory contains benchmarking, simulation and numerical
+validation utilities. These require separately prepared input data and the
+appropriate R/Python dependencies. Generated results, manuscript files and
+figures are kept outside the versioned repository.
 
 ## Tests and license
 

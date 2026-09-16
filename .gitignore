@@ -140,5 +140,10 @@ dist/
 !scripts/*.py
 !scripts/*.R
 
-# Curated, checksum-listed publication evidence.
-!publication/v4/**
+# Manuscripts, publication assets and document-authoring helpers stay local.
+/publication/
+/manuscript/
+*.docx
+*.pdf
+/scripts/build_v4_documents.py
+/scripts/mendeley_v4.py

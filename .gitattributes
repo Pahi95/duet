@@ -1,5 +1,4 @@
 * text=auto eol=lf
-publication/v4/** -text whitespace=cr-at-eol
 *.docx -text
 *.zip -text
 *.png -text

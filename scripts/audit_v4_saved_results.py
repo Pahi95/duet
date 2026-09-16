@@ -1,6 +1,6 @@
 """Reanalyse saved simulation scores; never fit models or regenerate simulations.
 
-Run: python scripts/audit_v4_saved_results.py --inputs ../inputs --output publication/v4/audit
+Run: python scripts/audit_v4_saved_results.py --inputs ../inputs --output results/audit
 Requires the archived results/sim_reps100/calls and original muscat gene_info.tsv files.
 Calibration thresholds are read unchanged from fdr_matched.csv (replicates 1--50).
 Category sensitivities are evaluated only on replicates 51--100 and the original

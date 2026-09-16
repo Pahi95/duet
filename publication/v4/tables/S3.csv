@@ -1,5 +1,0 @@
-mast_input,ebayes,input,total_cpu_s,total_wall_s,peak_mb,delta_mb,os_peak_private_mb,read_peak_mb,zlm_cpu_s,zlm_peak_mb,zlm_rheap_mb,lrtest_cpu_s,lrtest_peak_mb,n_timed_runs
-dense,True,ductal_all,364.2,381.6,4609,3889,4648,1551,184.5,4609,4525,156.9,3789,3
-dense,False,ductal_all,302.8,297.7,3202,2479,3242,1551,148.9,3156,3098,133.9,3202,3
-sparse,True,ductal_all,530.2,530.5,6192,5479,6226,1822,272,6192,5732,238.5,2808,3
-sparse,False,ductal_all,485.6,481.3,2358,1645,2387,1822,240.7,2355,2210,226.4,2358,3

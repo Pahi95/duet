@@ -1,5 +1,0 @@
-input,model,duet_compute_cpu_s,mast_compute_cpu_s,duet_cpu_s,mast_cpu_s,duet_delta_mb,mast_delta_mb,duet_n_runs,mast_n_runs,duet_peak_mb,mast_peak_mb,duet_wall_s,mast_wall_s,speedup_cpu,speedup_compute_cpu,memory_ratio_peak
-ductal_all,~cngeneson + condition,24.11,342.9,25.52,364.2,556.9,3744,5,5,745.4,4482,25.88,359.1,14.27,14.22,6.013
-ductal_all,~condition,0.375,303.2,1.906,323.6,613.8,3888,5,5,801.8,4600,2.02,322.8,169.8,,5.737
-sparsity_mid_c10000,~cngeneson + condition,24.38,357.3,25.83,376,387.1,3424,5,5,595.6,4164,26.16,376.8,14.56,14.66,6.991
-sparsity_mid_c10000,~condition,0.297,317.5,1.844,334.9,456.2,3948,5,5,643.6,4670,1.927,334.2,181.6,,7.255
