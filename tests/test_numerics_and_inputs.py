@@ -65,12 +65,20 @@ def _mp_log_two_sided_t_sf(t, df, dps=60):
 def test_log_betainc_matches_scipy_where_scipy_works(df):
     """The continued fraction is checked against SciPy on the range both can compute."""
     targets = np.linspace(-20.0, -290.0, 60)                  # log10 of the two-sided p
-    t = student_t.isf(10.0 ** targets / 2.0, df)
+    t_start = float(student_t.isf(1e-20 / 2.0, df))
+    # t.isf is not reliable in the far tail for small df in every SciPy release, so the
+    # t values come from two grids: the isf grid (dense for large df) and a geometric grid
+    # whose tail probability falls by about 10**4.5 per step for small df. Only valid
+    # points are compared; the expected value always comes from t.sf.
+    with np.errstate(over="ignore", invalid="ignore"):
+        t = np.concatenate([student_t.isf(10.0 ** targets / 2.0, df),
+                            t_start * 10.0 ** (np.arange(60) * 4.5 / df)])
+    t = t[np.isfinite(t) & (t > 0)]
     with np.errstate(divide="ignore"):
         want = np.log(2.0 * student_t.sf(t, df))
     # compare only where SciPy is exact: once its tail is subnormal (< ~2e-308) it
     # keeps just a few significant digits and is the less accurate of the two
-    ok = np.isfinite(want) & (want > math.log(1e-300))
+    ok = np.isfinite(want) & (want > math.log(1e-300)) & (want < math.log(1e-19))
     assert ok.sum() > 40
     log_t2 = 2.0 * np.log(t[ok])
     log_den = np.logaddexp(math.log(df), log_t2)
