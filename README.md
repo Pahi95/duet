@@ -1,5 +1,8 @@
 # DUET
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22801244.svg)](https://doi.org/10.5281/zenodo.22801244)
+[![PyPI](https://img.shields.io/pypi/v/duet-de.svg)](https://pypi.org/project/duet-de/)
+
 **Detection–Expression Unified Test** provides a cell-level two-part hurdle test
 and a donor-level pseudobulk arm for single-cell RNA sequencing in Python.
 
@@ -11,8 +14,10 @@ continuous statistic is not numerically identical to MAST's moderation.
 ## Install
 
 ```sh
-pip install -e ".[pseudobulk]"
+pip install "duet-de[pseudobulk]"
 ```
+
+From a clone of this repository: `pip install -e ".[pseudobulk]"`.
 
 Python 3.11 or later is supported. The core uses NumPy, SciPy and pandas with
 AnnData input. PyDESeq2 0.5 or later is required for the pseudobulk arm.
