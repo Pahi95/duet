@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-eb_logspace_report.py -- MO task 5: what removing DUET's 1e-300 clip changes.
+eb_logspace_report.py -- what removing DUET's 1e-300 clip changes.
 
 The empirical-Bayes step used to clip the two-sided moderated-t p-value at 1e-300,
 capping the continuous statistic at chi2.isf(1e-300, 1) = 1373.87. It now carries

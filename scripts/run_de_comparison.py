@@ -292,7 +292,7 @@ def run_deseq2(ad_ct, celltype, *, counts_layer, sample_col, condition, ref_labe
                          "donor": [d for _, _, d in smeta]},
                         index=pb.index)
     # ~donor + condition only when every donor contributes to both conditions (Kang);
-    # otherwise the donor term would be collinear with the condition (MO task 9)
+    # otherwise the donor term would be collinear with the condition
     per_donor = meta.groupby("donor")["condition"].nunique()
     design = "~donor + condition" if (per_donor == 2).all() and len(per_donor) > 1 else "~condition"
     n_ref_s = int((meta["condition"] == ref_label).sum())

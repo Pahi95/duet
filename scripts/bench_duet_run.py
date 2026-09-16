@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-bench_duet_run.py -- one engine run for the timing/memory benchmark (MO tasks 1, 2, 13).
+bench_duet_run.py -- one engine run for the timing/memory benchmark.
 Driven by bench_harness.py; run in a fresh process each time.
 
   python bench_duet_run.py <data.h5ad> <workdir> [--design condition|cdr]

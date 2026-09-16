@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-bench_harness.py -- the timing and memory benchmark (MO tasks 1, 2 and 13).
+bench_harness.py -- the timing and memory benchmark.
 
 Run on an otherwise idle machine and at normal priority. Before every run it WAITS
 while system CPU load exceeds --max-load (default 25%; the idle desktop sits near 10%);
@@ -171,7 +171,8 @@ def one_run(engine: str, data: Path, a, env: dict, keep: Path | None = None) -> 
 def _one_run(engine: str, data: Path, a, env: dict, tmp: str) -> list[dict]:
     py = [sys.executable, str(HERE / "scripts" / "bench_duet_run.py"), str(data), tmp]
     if engine == "duet":
-        parts = [("duet", run_child(py + ["--design", a.design], env))]
+        driver = [sys.executable, str(HERE / "scripts" / a.duet_driver), str(data), tmp]
+        parts = [("duet", run_child(driver + ["--design", a.design], env))]
     else:
         exp = run_child(py + ["--export"], env)
         parts = [("export", exp)]
@@ -239,6 +240,8 @@ def main():
     ap.add_argument("--ebayes", choices=["TRUE", "FALSE"], default="TRUE")
     ap.add_argument("--method", choices=["bayesglm", "glm"], default="bayesglm")
     ap.add_argument("--design", choices=["condition", "cdr"], default="condition")
+    ap.add_argument("--duet-driver", default="bench_duet_run.py",
+                    help="DUET timing script under scripts/ (bench_duet_run_matched.py: MAST-matched covariate settings)")
     ap.add_argument("--threads", type=int, default=1)
     ap.add_argument("--repeats", type=int, default=5)
     ap.add_argument("--warmup", type=int, default=1)

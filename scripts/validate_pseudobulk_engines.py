@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-validate_pseudobulk_engines.py -- MO task 9: is DUET's pseudobulk arm right?
+validate_pseudobulk_engines.py -- is DUET's pseudobulk arm right?
 
 Per dataset and cell type, on the raw integer UMI counts:
   1. the shipped wrapper, duet.pseudobulk.run_pseudobulk;

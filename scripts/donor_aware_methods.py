@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-donor_aware_methods.py -- MO task 12: DUET (ranking) + pseudobulk (calling) against
+donor_aware_methods.py -- DUET (ranking) + pseudobulk (calling) against
 methods that model the donor directly: GLIMES (Poisson and binomial GLMM with a donor
 random intercept; Wu, Zhou & Chen 2025) and MAST with a glmer donor random effect.
 

@@ -51,6 +51,9 @@ def main():
     # of the runtime, and DUET's own IRLS gives the same fit far more cheaply.
     ap.add_argument("--engine", default="statsmodels",
                     choices=["statsmodels", "numpy_irls"])
+    ap.add_argument("--reuse-mast", default=None,
+                    help="directory with a saved mast_cov_results.csv for the same cells, genes and CDR; "
+                         "R is not rerun (MAST is unaffected by DUET code changes)")
     a = ap.parse_args()
     out = Path(a.outdir); out.mkdir(parents=True, exist_ok=True)
 
@@ -99,13 +102,19 @@ def main():
     print(f"[cov] exported {len(genes)} genes x {A.n_obs} cells + CDR", flush=True)
 
     # ---- MAST with cngeneson --------------------------------------------
-    r = subprocess.run([RSCRIPT, str(HERE / "validate_covariate.R"), str(out)],
-                       capture_output=True, text=True)
-    sys.stdout.write("\n".join(l for l in r.stdout.splitlines()
-                               if l.startswith("[mast]")) + "\n")
-    if r.returncode != 0:
-        print(r.stderr[-2000:]); raise SystemExit("MAST failed")
-    mast = pd.read_csv(out / "mast_cov_results.csv")
+    if a.reuse_mast:
+        mast = pd.read_csv(Path(a.reuse_mast) / "mast_cov_results.csv")
+        saved = np.loadtxt(Path(a.reuse_mast) / "genes.txt", dtype=str)
+        assert list(saved) == list(genes), "gene set differs from the saved MAST run"
+        print(f"[cov] reusing MAST results from {a.reuse_mast}", flush=True)
+    else:
+        r = subprocess.run([RSCRIPT, str(HERE / "scripts" / "validate_covariate.R"), str(out)],
+                           capture_output=True, text=True)
+        sys.stdout.write("\n".join(l for l in r.stdout.splitlines()
+                                   if l.startswith("[mast]")) + "\n")
+        if r.returncode != 0:
+            print(r.stderr[-2000:]); raise SystemExit("MAST failed")
+        mast = pd.read_csv(out / "mast_cov_results.csv")
 
     # ---- compare ---------------------------------------------------------
     j = mast.merge(duet, on="gene", suffixes=("_m", "_d")).dropna(

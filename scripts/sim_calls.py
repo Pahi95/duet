@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 sim_calls.py -- per-gene results of every method on every muscat replicate
-(MO tasks 6, 7 and 10).
+.
 
 One file per replicate and method:
     results/sim_reps100/calls/<sim_repNN>/<method>.csv

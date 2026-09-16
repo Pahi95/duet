@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-donor_swap_partitions.py -- MO tasks 8 and 10: the donor-swap global null over every
+donor_swap_partitions.py -- the donor-swap global null over every
 unique balanced donor partition, with the full DUET decision rule.
 
 Only reference-arm cells are used. Every cell stays with its donor and all of a

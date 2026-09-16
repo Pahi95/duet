@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Tests added in the MO revision.
+Tests for numerical edge cases and input validation.
 
 1. The moderated-t tail is carried in log space. The empirical-Bayes step used to
    clip the two-sided t p-value at 1e-300, which capped the continuous statistic at

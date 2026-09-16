@@ -20,7 +20,7 @@ Two defects in PancreasIntegratedAnnotated.h5ad make it unsuitable as it stands:
 
 File -> library mapping: the user-supplied HPAP names in ASCII-sorted order map to
 files 1..16; this ordering, and no other, makes every group of files that share
-barcodes belong to a single donor (revision_MO/_work/hpap_barcode_overlap.py).
+barcodes belong to a single donor (checked on the barcode lists of the count files).
 
 Outputs (the original object is not modified):
   inputs/PancreasCorrected.h5ad          X = log1p(CP10k), layers["counts"] = int32 UMIs
@@ -181,7 +181,7 @@ def main():
     out.write_h5ad(a.out, compression="lzf")
     print(f"[build] wrote {a.out}  {out.shape}", flush=True)
 
-    # ---- 5. sample table (MO task 9) --------------------------------------
+    # ---- 5. sample table --------------------------------------
     rows = []
     for f in pd.unique(src):
         m = src == f

@@ -63,10 +63,23 @@ methods, so thresholds cannot be transferred without checking the scale.
 
 ## Analysis and validation scripts
 
-The `scripts/` directory contains benchmarking, simulation and numerical
-validation utilities. These require separately prepared input data and the
-appropriate R/Python dependencies. Generated results, manuscript files and
-figures are kept outside the versioned repository.
+`scripts/` contains the analyses behind the DUET manuscript. They need the public input data
+(Kang et al. 2018 PBMCs, Crowell et al. 2020 mouse cortex via muscatData, and the pancreas input
+described in the manuscript) and, for the comparisons, R with MAST, DESeq2, muscat, edgeR, limma,
+lme4 and GLIMES. Results are written to `results/`, which is not versioned.
+`python scripts/make_all_results.py --dry-run` lists every step and its command.
+
+| Analysis | Scripts |
+|---|---|
+| Input data | `build_kang_h5ad.py`, `build_crowell_h5ad.py` (+ `get_crowell.R`), `build_pancreas_corrected.py` |
+| Agreement with R MAST | `run_de_comparison.py`, `run_mast_dataset.py`, `mast_settings_check.py` (+ `mast_components.R`), `validate_covariate.py` (+ `.R`), `validate_engine.py` |
+| Benchmark | `bench_prepare.py`, `bench_harness.py`, `bench_duet_run.py`, `bench_duet_run_matched.py`, `bench_mast_steps.R`, `collect_evidence.py` |
+| p-value underflow | `underflow_check.py`, `eb_logspace_report.py` |
+| muscat simulations (100 replicates) | `simulate_replicates.R`, `sim_calls.py` (+ `bench_mast_run.R`), `sim_score.py`, `sim_pb_edger_voom.R`, `sim_score_pb_extra.py` |
+| Calibration diagnostics | `fdr_scale_diag.py`, `arm_offset.py`, `null_calibration.py`, `null_permutations.py`, `simulate_batch_nb.py` |
+| Donor-swap null | `donor_swap_partitions.py`, `donor_swap_sexgenes.py` |
+| Donor-aware models | `donor_aware_methods.py`, `donor_aware_run.R`, `install_glimes.R`, `evaluate_sim_replicates.py`, `evaluate_sim.py` |
+| Pseudobulk implementation | `validate_pseudobulk_engines.py` (+ `pseudobulk_deseq2.R`) |
 
 ## Tests and license
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 sim_score.py -- score the muscat replicates against their ground truth
-(MO tasks 6, 7 and 10). Reads the per-gene files written by sim_calls.py.
+. Reads the per-gene files written by sim_calls.py.
 
 Truth, fixed before scoring (decision A4):
   primary    alternative = de, dp, dm, db; null = ee AND ep. In muscat:::.sim an `ep`

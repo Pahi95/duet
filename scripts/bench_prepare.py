@@ -2,7 +2,7 @@
 """
 bench_prepare.py -- write the benchmark inputs once, so every timed run starts from
 the same file: the same cells, genes, gene order and conditions for both engines
-(MO tasks 2 and 13). Output: inputs/bench/<name>/data.h5ad, X = log1p(CP10k) CSR,
+. Output: inputs/bench/<name>/data.h5ad, X = log1p(CP10k) CSR,
 obs.condition, uns.labels, uns.meta.
 
 Real ladder, from the corrected pancreas object (Reference vs pancreas):
@@ -12,7 +12,7 @@ Real ladder, from the corrected pancreas object (Reference vs pancreas):
   genes        DUET's mast_compat gate on that subset (>= 1 positive cell per group,
                >= 20 cells) and detected in >= 10% of the cells of at least one group
 
-Synthetic grid, one factor at a time (task 13), negative-binomial counts with gene
+Synthetic grid, one factor at a time, negative-binomial counts with gene
 (mean, dispersion) pairs resampled from the Crowell reference (results/batchsim/params.json),
 two equal groups, 5% of genes with a two-fold mean change:
   cells_<n>_g8000         n in 1000, 2500, 5000, 10000, 25000, 50000 -- the gene list fixed

@@ -1,6 +1,6 @@
 {
-  "title": "DUET: fast two-part hurdle testing for single-cell differential expression in Python",
-  "description": "DUET implements cell-level two-part hurdle testing and a donor-level pseudobulk arm in Python. The moderated continuous component differs from MAST. Underflow-safe log-scale values preserve ranking information. Publication V4 includes saved simulation results, benchmarks, scripts and explicit limitations; no universal FDR or category-sensitivity advantage is claimed.",
+  "title": "DUET: two-part hurdle testing for single-cell differential expression in Python",
+  "description": "DUET (Detection-Expression Unified Test) implements cell-level two-part hurdle testing and a donor-level pseudobulk arm for single-cell RNA sequencing in Python, with underflow-safe log-scale significance. The repository contains the package, its tests and the analysis scripts behind the accompanying manuscript (agreement with R MAST, benchmarks, muscat simulations, calibration and donor-swap null experiments).",
   "upload_type": "software",
   "license": "MIT",
   "access_right": "open",

@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# donor_aware_run.R -- a donor-aware single-cell DE method on one export (MO task 12).
+# donor_aware_run.R -- a donor-aware single-cell DE method on one export.
 # Companion of donor_aware_methods.py.
 #
 # Usage: Rscript donor_aware_run.R <dir> <method> [lib]

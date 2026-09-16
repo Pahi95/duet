@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 # bench_mast_steps.R -- R MAST, one stage at a time, for the timing and memory
-# benchmark (MO tasks 1, 2 and 13). Driven by bench_harness.py.
+# benchmark. Driven by bench_harness.py.
 #
 # Usage: Rscript bench_mast_steps.R <dir> <input: sparse|dense> <ebayes: TRUE|FALSE>
 #                                   [method: bayesglm|glm] [design: condition|cdr]

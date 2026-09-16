@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-mast_settings_check.py -- MO task 3: how closely does DUET reproduce MAST, component
+mast_settings_check.py -- how closely does DUET reproduce MAST, component
 by component, and under which MAST settings?
 
 For each dataset: DUET (mast_compat: ~condition, no covariates, EB variance

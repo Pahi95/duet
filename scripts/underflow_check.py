@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-underflow_check.py -- MO task 4: does a p-value stored as 0.0 actually damage the
+underflow_check.py -- does a p-value stored as 0.0 actually damage the
 gene ranking in the packages we compare, and what does each package rank by?
 
 For pancreas Ductal (corrected object) and Kang CD14+ monocytes, on one gene set

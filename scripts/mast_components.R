@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 # mast_components.R -- R MAST with every setting spelled out, returning each hurdle
-# component separately (MO task 3). Companion of mast_settings_check.py.
+# component separately. Companion of mast_settings_check.py.
 #
 # Usage: Rscript mast_components.R <dir> <method: bayesglm|glm> <ebayes: TRUE|FALSE>
 #   <dir> holds expr.mtx (genes x cells, log-normalised), genes.txt, cells.txt,

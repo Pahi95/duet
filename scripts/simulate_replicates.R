@@ -38,8 +38,7 @@ for (r in seq_len(nrep)) {
   seed <- 100L + r
   outdir <- file.path(inputs, "data", sprintf("sim_rep%02d", r))
   dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-  # seed.txt is written last, so it marks a complete replicate (MO task 16 also asks
-  # for the seed to be recorded). A directory without it was interrupted mid-write and
+  # seed.txt is written last, so it marks a complete replicate. A directory without it was interrupted mid-write and
   # is regenerated from the same seed.
   if (file.exists(file.path(outdir, "seed.txt"))) {
     cat(sprintf("[sim] rep %d already present, skipping\n", r)); next

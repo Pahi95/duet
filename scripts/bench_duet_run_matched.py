@@ -1,8 +1,8 @@
-"""Future covariate timing driver with explicit EB and gating settings.
+"""Covariate timing driver with MAST-matched EB and gating settings (V5 real_cdr_matched, grid_cdr_matched).
 
 Same CLI as bench_duet_run.py. Use a NEW work directory. This driver was not
-used to produce the historical CDR timings in V4 Table S5; no corrected timing
-measurements are claimed in V4. Pair with MAST bayesglm, ebayes=TRUE, the same
+used for the historical CDR timings (real_cdr, grid_cdr); the V5 matched timings
+use it with --duet-driver. Pair with MAST bayesglm, ebayes=TRUE, the same
 CDR and condition design and identical input, CPU/thread and process settings.
 """
 import sys

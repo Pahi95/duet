@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-simulate_batch_nb.py -- MO task 14: donor and batch effects, one at a time, by simulation.
+simulate_batch_nb.py -- donor and batch effects, one at a time, by simulation.
 
 A parametric negative-binomial simulator whose gene means, dispersions and library
 sizes come from a real experiment (Crowell, Vehicle excitatory neurons), with the

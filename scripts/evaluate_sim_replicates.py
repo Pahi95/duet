@@ -139,7 +139,7 @@ def main():
             np.savetxt(d / "cond.txt", A.obs.Sample.astype(str).to_numpy(), fmt="%s")
             (d / "labels.json").write_text('{"ref": "A", "test": "B"}', encoding="utf-8")
             t0 = time.time()
-            r = subprocess.run([RSCRIPT, str(HERE / "bench_mast_run.R"), str(d), "1"],
+            r = subprocess.run([RSCRIPT, str(HERE / "scripts" / "bench_mast_run.R"), str(d), "1"],
                                capture_output=True, text=True)
             if r.returncode == 0:
                 m = pd.read_csv(d / "mast_results.csv")

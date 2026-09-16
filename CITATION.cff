@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "DUET: fast two-part hurdle testing for single-cell differential expression in Python"
+title: "DUET: two-part hurdle testing for single-cell differential expression in Python"
 message: "If you use this software, please cite it using these metadata."
 type: software
 authors:
@@ -17,6 +17,6 @@ keywords:
   - Python
   - scverse
 abstract: >-
-  DUET provides two-part hurdle testing and donor-level pseudobulk analysis in
-  Python, with underflow-safe log-scale significance. The publication V4
-  package includes saved evidence and documents statistical and data limitations.
+  DUET provides two-part hurdle testing and donor-level pseudobulk analysis for
+  single-cell RNA sequencing in Python, with underflow-safe log-scale significance.
+  The repository includes the analysis scripts behind the accompanying manuscript.
