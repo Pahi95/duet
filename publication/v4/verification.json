@@ -11,11 +11,26 @@
     "Historical CDR settings unmatched",
     "Author fields and persistent archive identifier pending"
   ],
-  "visual_review": "33 clean manuscript pages, 36 supplementary pages and 33 additions-marked pages rendered and inspected",
-  "document_checks": "clean and red paragraph text identical; five figures; no unresolved build tokens",
+  "visual_review": "34 clean manuscript pages, 20 supplementary pages and 34 additions-marked pages rendered and inspected after layout correction",
+  "document_checks": "clean and red visible XML text identical; all 25 tables preserve every data cell and column; no column panels; all seven main tables follow references on landscape pages; Figure 5 landscape",
   "retired_utilities": [
     "scripts/make_all_panels.py",
     "scripts/make_fig4.py"
   ],
-  "citation_metadata": "removed fake ORCID and placeholder affiliation; manuscript author fields remain explicitly pending"
+  "citation_metadata": "removed fake ORCID and placeholder affiliation; manuscript author fields remain explicitly pending",
+  "mendeley_checks": {
+    "citation_controls_per_manuscript": 31,
+    "references": 32,
+    "original_library_ids": 31,
+    "temporary_new_items": [
+      "lme4"
+    ],
+    "add_in_cache": "matches every citation control",
+    "interactive_word_add_in_test": false
+  },
+  "layout_page_counts": {
+    "main": 34,
+    "red": 34,
+    "supp": 20
+  }
 }

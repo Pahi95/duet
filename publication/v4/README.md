@@ -15,7 +15,18 @@ python scripts/build_v4_documents.py --output output_v4
 This uses only the files included here. `manuscript.md` is the resolved text;
 `tables.json` identifies each CSV and its caption; `figures/` contains the five
 composite figures. `additional_file_1_samples.csv` is the sample/library mapping.
-The supplementary document splits wide tables into readable column panels.
+Main tables are complete landscape tables placed after the references. Figure 5
+uses a landscape page and a wider plot layout. Supplementary tables retain all
+columns together, with A3 landscape pages for very wide or long tables; the
+90-row Table S1 continues vertically with repeated headers.
+
+The DOCX files contain Mendeley Cite content controls, a bibliography control and
+a synchronized add-in citation cache. `mendeley_items.json` preserves 31 original
+library IDs; the added lme4 item contains full metadata and is marked temporary.
+The original IEEE citation style is retained. The package structure was checked;
+interactive Mendeley Cite operation must still be checked in the author's Word
+session. Bibliography exports are supplementary copies, not a replacement for
+the embedded citation controls. Rebuilding uses `scripts/mendeley_v4.py`.
 Archived benchmark columns ending in `_mb` use bytes / 2^20, i.e. **MiB**.
 
 ## Recalculate from saved results

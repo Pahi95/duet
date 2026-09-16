@@ -101,7 +101,7 @@
   },
   {
     "file": "scripts/build_v4_documents.py",
-    "sha256": "1a721039369a7f82a8b902043c918c188c209f4e3c127e14862e2411d3cf7e70",
+    "sha256": "3334c21f49b409db947b1626869931c680577e0984452fb55cabe19ba5e0acfa",
     "normalization": "UTF-8 with LF newlines"
   },
   {
@@ -152,6 +152,11 @@
   {
     "file": "scripts/mast_settings_check.py",
     "sha256": "6bb4d6708e71f5ef7b16066bf204d642051778ba989ed852b65cc6df298d6f2a",
+    "normalization": "UTF-8 with LF newlines"
+  },
+  {
+    "file": "scripts/mendeley_v4.py",
+    "sha256": "1186e22f4e52a322d9c930239860a2aee14ca87aacc42d1ed90b4865aac0c339",
     "normalization": "UTF-8 with LF newlines"
   },
   {

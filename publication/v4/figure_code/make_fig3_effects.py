@@ -150,7 +150,7 @@ def main():
               ("(b) Δ detection", "delta_det_pp", "percentage points")]
     panels += [(f"({chr(ord('c') + i)}) {lab}", f"lfc_{lab}", unit) for i, (lab, (_, unit)) in enumerate(METHODS.items())]
 
-    fig, axes = plt.subplots(1, len(panels), figsize=(12, 11), constrained_layout=True)
+    fig, axes = plt.subplots(1, len(panels), figsize=(17, 8.3), constrained_layout=True)
     for i, (ax, (title, col, unit)) in enumerate(zip(axes, panels)):
         draw(ax, mat(col), title, unit, ylabels=genes if i == 0 else None, fig=fig)
     fig.suptitle("Pancreas: common effect sizes (a, b) and each method's own output (c-g); "
