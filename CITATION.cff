@@ -9,7 +9,7 @@ repository-code: "https://github.com/Pahi95/duet"
 license: MIT
 version: 1.1.0
 doi: 10.5281/zenodo.22801244
-date-released: 2026-09-16
+date-released: 2026-09-21
 identifiers:
   - type: doi
     value: 10.5281/zenodo.22801244
@@ -17,6 +17,9 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.22801245
     description: DUET 1.0.0
+  - type: doi
+    value: 10.5281/zenodo.22877336
+    description: DUET 1.1.0
 keywords:
   - single-cell RNA-seq
   - differential expression
