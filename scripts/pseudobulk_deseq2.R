@@ -11,7 +11,7 @@
 suppressPackageStartupMessages(library(DESeq2))
 a <- commandArgs(trailingOnly = TRUE)
 if (length(a) != 6) stop("usage: pseudobulk_deseq2.R counts.csv coldata.csv design ref test out.csv")
-cts <- read.csv(a[1], row.names = 1, check.names = FALSE)
+cts <- read.csv(a[1], row.names = 1, check.names = FALSE, na.strings = character(0))  # a gene named "NA" stays a name
 cd <- read.csv(a[2], row.names = 1, check.names = FALSE)
 cd <- cd[colnames(cts), , drop = FALSE]
 cd$condition <- factor(cd$condition, levels = c(a[4], a[5]))

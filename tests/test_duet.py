@@ -538,3 +538,28 @@ def test_r_engine_is_invariant_to_sample_order():
             np.testing.assert_allclose(r0[col].to_numpy(), r1.loc[r0.index, col].to_numpy(),
                                        rtol=1e-6, atol=1e-12, equal_nan=True)
         assert ((r0["padj"] < 0.05) == (r1.loc[r0.index, "padj"] < 0.05)).all()
+
+
+def test_gene_order_and_awkward_gene_names_stay_aligned():
+    """Genes are matched by name, never by position: permuting the genes, or naming
+    one "NA", must not move a result onto another gene."""
+    import warnings
+    from duet import run_pseudobulk
+    pytest.importorskip("pydeseq2")
+    a = _paired_toy_noisy()
+    a.var_names = ["NA", "NULL", "MARCH1"] + list(a.var_names[3:])
+    kw = dict(donor_col="donor", condition_col="condition", ref_label="ctrl",
+              test_label="stim", n_cpus=1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        r0 = run_pseudobulk(a, **kw).set_index("gene")
+        b = a[:, np.random.default_rng(3).permutation(a.n_vars)].copy()
+        r1 = run_pseudobulk(b, **kw).set_index("gene").loc[r0.index]
+    assert "NA" in r0.index and r0.index.is_unique
+    np.testing.assert_allclose(r0["pb_log2FC"], r1["pb_log2FC"], rtol=1e-6)
+    np.testing.assert_allclose(r0["pb_pvalue"], r1["pb_pvalue"], rtol=1e-5)
+    exe = _rscript_with_deseq2()
+    if exe is not None:
+        r2 = run_pseudobulk(b, engine="R", rscript=exe, **kw).set_index("gene").loc[r0.index]
+        assert r2["pb_log2FC"].notna().loc["NA"]
+        np.testing.assert_allclose(r0["pb_log2FC"], r2["pb_log2FC"], rtol=0.05, atol=0.05)

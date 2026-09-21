@@ -162,7 +162,7 @@ def aggregate_pseudobulk(
 _R_DESEQ2 = r"""
 suppressPackageStartupMessages(library(DESeq2))
 a <- commandArgs(trailingOnly = TRUE)
-cts <- read.csv(a[1], row.names = 1, check.names = FALSE)
+cts <- read.csv(a[1], row.names = 1, check.names = FALSE, na.strings = character(0))
 cd <- read.csv(a[2], row.names = 1, check.names = FALSE, colClasses = "character")
 stopifnot(identical(rownames(cd), colnames(cts)))
 cd$condition <- factor(cd$condition, levels = c(a[4], a[5]))
@@ -197,8 +197,13 @@ def _deseq2_r(pb, meta, design, ref_label, test_label, rscript=None):
                            capture_output=True, text=True)
         if r.returncode != 0:
             raise RuntimeError(f"R DESeq2 failed:\n{r.stderr[-1500:]}")
-        out = pd.read_csv(t / "out.csv")
-    out["gene"] = out["gene"].astype(str)
+        # gene names stay strings ("NA" or "NULL" must not become NaN); R's "NA" values
+        # in the numeric columns are converted explicitly
+        out = pd.read_csv(t / "out.csv", dtype=str, keep_default_na=False)
+    for c in ("log2FoldChange", "stat", "pvalue", "padj"):
+        out[c] = pd.to_numeric(out[c], errors="coerce")
+    if list(out["gene"]) != [str(g) for g in pb.columns]:
+        raise RuntimeError("R DESeq2 returned genes in a different order or under different names")
     return out.set_index("gene")
 
 
