@@ -98,7 +98,7 @@ import scipy.sparse as sp
 from scipy.stats import chi2, chi2_contingency, fisher_exact, t as _student_t
 from scipy.special import betaln, digamma, gammaln, ndtri_exp, polygamma, xlogy
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 # --------------------------------------------------------------------------- #
 # Optional dependencies (kept lazy / soft so importing this module is cheap).

@@ -73,7 +73,9 @@ path = run_duet_pseudobulk(adata, output_dir="results", celltype_col="celltype",
 ```
 
 Set `paired=True` only when every donor contributes both conditions; pairing is not detected
-automatically. The `call` column is:
+automatically. For paired designs pass `engine="R"` as well: it runs R DESeq2 (needs `Rscript` with
+DESeq2; point `rscript=` or the `RSCRIPT` environment variable at it). PyDESeq2's paired fit depends
+on the order of the samples; R DESeq2's does not (`check_pydeseq2_order.py`). The `call` column is:
 
 | call | meaning |
 |---|---|
@@ -136,6 +138,7 @@ written to `results/`, which is not versioned.
 | Donor-swap null | `donor_swap_partitions.py`, `donor_swap_sexgenes.py` |
 | Donor-aware models | `donor_aware_methods.py`, `donor_aware_run.R`, `install_glimes.R`, `evaluate_sim_replicates.py`, `evaluate_sim.py` |
 | Pseudobulk implementation | `validate_pseudobulk_engines.py` (+ `pseudobulk_deseq2.R`) |
+| Pseudobulk sample-order check | `check_pydeseq2_order.py`, `check_pydeseq2_order_unpaired.py` |
 
 ## Citation
 

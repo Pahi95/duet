@@ -13,6 +13,7 @@ manuscript's claims rest on.
 """
 from __future__ import annotations
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -436,3 +437,104 @@ def test_donor_and_condition_must_differ():
     with pytest.raises(ValueError, match="must differ"):
         run_duet_pseudobulk(a, condition_col="condition", donor_col="condition",
                             ref_label="ctrl", test_label="stim")
+
+
+# --------------------------------------------------------------------------
+# sample order: rearranging the input must not change the pseudobulk result
+# --------------------------------------------------------------------------
+
+def _paired_toy_noisy(seed=5):
+    """Paired design with donor-level noise, so dispersions are not degenerate."""
+    import anndata as ad
+    import pandas as pd
+    import scipy.sparse as sp
+    rng = np.random.default_rng(seed)
+    n_donors, per, n_genes = 6, 40, 60
+    donor_eff = rng.normal(0, 0.3, size=(n_donors, n_genes))
+    rows, donors, conds = [], [], []
+    for d in range(n_donors):
+        for c in ("ctrl", "stim"):
+            mu = np.exp(1.0 + donor_eff[d] + (np.r_[np.full(6, 1.2), np.zeros(n_genes - 6)] if c == "stim" else 0))
+            rows.append(rng.negative_binomial(5, 5 / (5 + np.tile(mu, (per, 1)))))
+            donors += [f"d{d}"] * per
+            conds += [c] * per
+    X = np.vstack(rows).astype(float)
+    obs = pd.DataFrame({"celltype": "T", "donor": donors, "condition": conds},
+                       index=[f"c{i}" for i in range(len(X))])
+    a = ad.AnnData(X=sp.csr_matrix(np.log1p(X)), obs=obs,
+                   var=pd.DataFrame(index=[f"g{j}" for j in range(n_genes)]))
+    a.layers["counts"] = sp.csr_matrix(X)
+    return a
+
+
+def test_pseudobulk_levels_are_explicit_and_aligned():
+    """Donor and condition are categorical with fixed levels (reference first),
+    and the count rows are the metadata rows, in the same order."""
+    from duet import aggregate_pseudobulk
+    a = _paired_toy_noisy()
+    shuffled = a[np.random.default_rng(1).permutation(a.n_obs)].copy()
+    for x in (a, shuffled):
+        pb, meta = aggregate_pseudobulk(x, donor_col="donor", condition_col="condition",
+                                        ref_label="ctrl", test_label="stim")
+        assert list(pb.index) == list(meta.index)
+        assert list(meta["condition"].cat.categories) == ["ctrl", "stim"]
+        assert list(meta["donor"].cat.categories) == sorted(set(x.obs["donor"]))
+    pb0, meta0 = aggregate_pseudobulk(a, donor_col="donor", condition_col="condition",
+                                      ref_label="ctrl", test_label="stim")
+    assert list(meta0.index) == list(meta.index) and pb0.equals(pb)
+
+
+@pytest.mark.parametrize("paired", [False, True])
+def test_pseudobulk_result_does_not_depend_on_cell_order(paired):
+    """Reordering the cells -- and with them the order in which donors and
+    samples first appear -- must give the identical result, paired or not."""
+    import warnings
+    from duet import run_pseudobulk
+    pytest.importorskip("pydeseq2")
+    a = _paired_toy_noisy()
+    if not paired:                       # keep one condition per donor
+        keep = ((a.obs.donor.isin(["d0", "d1", "d2"]) & (a.obs.condition == "ctrl"))
+                | (a.obs.donor.isin(["d3", "d4", "d5"]) & (a.obs.condition == "stim"))).to_numpy()
+        a = a[keep].copy()
+    kw = dict(donor_col="donor", condition_col="condition", ref_label="ctrl",
+              test_label="stim", paired=paired, n_cpus=1)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        r0 = run_pseudobulk(a, **kw).set_index("gene").sort_index()
+        for seed in (1, 2):
+            b = a[np.random.default_rng(seed).permutation(a.n_obs)].copy()
+            r1 = run_pseudobulk(b, **kw).set_index("gene").sort_index()
+            for col in ("pb_log2FC", "pb_pvalue", "pb_padj"):
+                np.testing.assert_array_equal(r0[col].to_numpy(), r1[col].to_numpy())
+
+
+def _rscript_with_deseq2():
+    import shutil
+    import subprocess
+    exe = os.environ.get("RSCRIPT") or shutil.which("Rscript")
+    if not exe:
+        return None
+    ok = subprocess.run([exe, "-e", "quit(status = !requireNamespace('DESeq2', quietly = TRUE))"],
+                        capture_output=True)
+    return exe if ok.returncode == 0 else None
+
+
+def test_r_engine_is_invariant_to_sample_order():
+    """R DESeq2 -- the engine recommended for paired designs -- returns the same
+    result whichever order the samples are handed over in."""
+    from duet import aggregate_pseudobulk
+    from duet.pseudobulk import _deseq2_r
+    exe = _rscript_with_deseq2()
+    if exe is None:
+        pytest.skip("Rscript with DESeq2 not available")
+    a = _paired_toy_noisy()
+    pb, meta = aggregate_pseudobulk(a, donor_col="donor", condition_col="condition",
+                                    ref_label="ctrl", test_label="stim")
+    design = "~donor + condition"
+    r0 = _deseq2_r(pb, meta, design, "ctrl", "stim", rscript=exe)
+    for order in (pb.index[::-1], pb.index[np.random.default_rng(0).permutation(len(pb))]):
+        r1 = _deseq2_r(pb.loc[order], meta.loc[order], design, "ctrl", "stim", rscript=exe)
+        for col in ("log2FoldChange", "pvalue", "padj"):
+            np.testing.assert_allclose(r0[col].to_numpy(), r1.loc[r0.index, col].to_numpy(),
+                                       rtol=1e-6, atol=1e-12, equal_nan=True)
+        assert ((r0["padj"] < 0.05) == (r1.loc[r0.index, "padj"] < 0.05)).all()

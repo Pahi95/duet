@@ -26,15 +26,26 @@ leaving DUET:
 
 The result carries both arms per gene and a `call` column that combines them.
 
-The statistical engine is PyDESeq2, deliberately: re-implementing a
+The statistical engine is PyDESeq2 by default, deliberately: re-implementing a
 negative-binomial GLM with dispersion shrinkage would add a second inference
 path to validate, and the aggregation -- not the test -- is what this module
-exists to get right.
+exists to get right. ``engine="R"`` hands the same matrix to R DESeq2 instead.
+For paired (``~donor + condition``) designs that is the recommended engine:
+PyDESeq2 0.5.4's paired fit depends on the order of the samples even with fixed
+factor levels (its gene-wise dispersion optimiser stops at order-dependent points
+where the likelihood is flat), whereas R DESeq2 returns the same result for any
+order. Samples are always passed in one canonical order, so either engine is
+reproducible run to run.
 """
 from __future__ import annotations
 
 import math
+import os
+import shutil
+import subprocess
+import tempfile
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -131,13 +142,64 @@ def aggregate_pseudobulk(
 
     pb = pd.DataFrame(np.rint(np.vstack(rows)).astype(np.int64),
                       index=[r[0] for r in meta_rows], columns=genes)
+    # Explicit factor levels: donors sorted, the reference condition first, so the
+    # design matrix -- and which group the contrast is against -- never depends on
+    # which sample happens to come first.
     meta = pd.DataFrame(
-        {"donor": [r[1] for r in meta_rows],
+        {"donor": pd.Categorical([r[1] for r in meta_rows],
+                                 categories=sorted({r[1] for r in meta_rows})),
          "condition": pd.Categorical([r[2] for r in meta_rows],
                                      categories=[str(ref_label), str(test_label)]),
          "n_cells": [r[3] for r in meta_rows]},
         index=pb.index)
+    if not pb.index.equals(meta.index):                # pragma: no cover - by construction
+        raise RuntimeError("pseudobulk counts and metadata are not in the same sample order")
     return pb, meta
+
+
+# R DESeq2 on the matrix written by _deseq2_r: default DESeq() and results(), i.e.
+# independent filtering and Cook's cut-off as in R. Levels are set explicitly.
+_R_DESEQ2 = r"""
+suppressPackageStartupMessages(library(DESeq2))
+a <- commandArgs(trailingOnly = TRUE)
+cts <- read.csv(a[1], row.names = 1, check.names = FALSE)
+cd <- read.csv(a[2], row.names = 1, check.names = FALSE, colClasses = "character")
+stopifnot(identical(rownames(cd), colnames(cts)))
+cd$condition <- factor(cd$condition, levels = c(a[4], a[5]))
+cd$donor <- factor(cd$donor, levels = sort(unique(cd$donor)))
+dds <- DESeqDataSetFromMatrix(as.matrix(round(cts)), colData = cd, design = as.formula(a[3]))
+dds <- DESeq(dds, quiet = TRUE)
+res <- results(dds, contrast = c("condition", a[5], a[4]))
+write.csv(data.frame(gene = rownames(res), log2FoldChange = res$log2FoldChange, stat = res$stat,
+                     pvalue = res$pvalue, padj = res$padj), a[6], row.names = FALSE)
+"""
+
+
+def _find_rscript(rscript=None):
+    exe = rscript or os.environ.get("RSCRIPT") or shutil.which("Rscript")
+    if not exe or not (Path(exe).exists() or shutil.which(exe)):
+        raise RuntimeError(
+            "engine='R' needs Rscript with the DESeq2 package; pass rscript=... or set "
+            "the RSCRIPT environment variable")
+    return exe
+
+
+def _deseq2_r(pb, meta, design, ref_label, test_label, rscript=None):
+    """R DESeq2 on a pseudobulk matrix; returns the columns PyDESeq2's results_df has."""
+    exe = _find_rscript(rscript)
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        (t / "deseq2.R").write_text(_R_DESEQ2, encoding="utf-8")
+        pb.T.to_csv(t / "counts.csv")
+        meta[["donor", "condition"]].astype(str).to_csv(t / "coldata.csv")
+        r = subprocess.run([exe, str(t / "deseq2.R"), str(t / "counts.csv"), str(t / "coldata.csv"),
+                            design, str(ref_label), str(test_label), str(t / "out.csv")],
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            raise RuntimeError(f"R DESeq2 failed:\n{r.stderr[-1500:]}")
+        out = pd.read_csv(t / "out.csv")
+    out["gene"] = out["gene"].astype(str)
+    return out.set_index("gene")
 
 
 def run_pseudobulk(
@@ -154,6 +216,8 @@ def run_pseudobulk(
     min_gene_counts: int = 10,
     paired: bool = False,
     n_cpus: int | None = None,
+    engine: str = "pydeseq2",
+    rscript: str | None = None,
 ):
     """DESeq2 on pseudobulk profiles. One row per gene.
 
@@ -161,16 +225,24 @@ def run_pseudobulk(
     the stronger model when every donor contributes to both arms. It is not the
     default because it is only estimable in that design.
 
+    `engine` is ``"pydeseq2"`` (default) or ``"R"`` (R DESeq2 through Rscript;
+    `rscript` or the RSCRIPT environment variable can point to the executable).
+    Use ``"R"`` for paired designs: PyDESeq2's paired fit is sensitive to sample
+    order, R DESeq2's is not.
+
     `n_cpus` is passed to PyDESeq2, which otherwise starts one worker process per
     CPU; set it to 1 when this runs inside parallel jobs.
     """
-    try:
-        from pydeseq2.dds import DeseqDataSet
-        from pydeseq2.ds import DeseqStats
-    except ImportError as e:                      # pragma: no cover
-        raise ImportError(
-            "the pseudobulk arm needs PyDESeq2:  pip install pydeseq2"
-        ) from e
+    if engine not in ("pydeseq2", "R"):
+        raise ValueError(f"engine must be 'pydeseq2' or 'R', not {engine!r}")
+    if engine == "pydeseq2":
+        try:
+            from pydeseq2.dds import DeseqDataSet
+            from pydeseq2.ds import DeseqStats
+        except ImportError as e:                  # pragma: no cover
+            raise ImportError(
+                "the pseudobulk arm needs PyDESeq2:  pip install pydeseq2"
+            ) from e
 
     pb, meta = aggregate_pseudobulk(
         adata, donor_col=donor_col, condition_col=condition_col,
@@ -208,15 +280,23 @@ def run_pseudobulk(
             "pseudobulk sample comes from a different donor; the donor term "
             "would be collinear with the condition term.")
 
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        dds = DeseqDataSet(counts=pb, metadata=meta, design=design, quiet=True, n_cpus=n_cpus)
-        dds.deseq2()
-        st = DeseqStats(dds, contrast=["condition", str(test_label), str(ref_label)],
-                        quiet=True, n_cpus=n_cpus)
-        st.summary()
-
-    r = st.results_df.reset_index()
+    if engine == "R":
+        r = _deseq2_r(pb, meta, design, ref_label, test_label, rscript=rscript).reset_index()
+    else:
+        if paired:
+            warnings.warn(
+                "PyDESeq2's paired (~donor + condition) fit depends on sample order; "
+                "samples are passed in a fixed order, so the result is reproducible, "
+                "but engine='R' (R DESeq2) is order-invariant and recommended here.",
+                UserWarning, stacklevel=2)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            dds = DeseqDataSet(counts=pb, metadata=meta, design=design, quiet=True, n_cpus=n_cpus)
+            dds.deseq2()
+            st = DeseqStats(dds, contrast=["condition", str(test_label), str(ref_label)],
+                            quiet=True, n_cpus=n_cpus)
+            st.summary()
+        r = st.results_df.reset_index()
     gcol = "gene" if "gene" in r.columns else r.columns[0]
     res = pd.DataFrame({
         "gene": r[gcol].astype(str),
@@ -301,6 +381,8 @@ def run_duet_pseudobulk(
     min_donors_per_group: int = 2,
     min_gene_counts: int = 10,
     n_cpus: int | None = None,
+    engine: str = "pydeseq2",
+    rscript: str | None = None,
     output_name: str = "duet_pseudobulk.csv",
     **duet_kwargs,
 ):
@@ -351,7 +433,8 @@ def run_duet_pseudobulk(
             counts_layer=counts_layer, celltype=ct,
             min_cells_per_donor=min_cells_per_donor,
             min_donors_per_group=min_donors_per_group,
-            min_gene_counts=min_gene_counts, paired=paired, n_cpus=n_cpus))
+            min_gene_counts=min_gene_counts, paired=paired, n_cpus=n_cpus,
+            engine=engine, rscript=rscript))
     pb = pd.concat(frames, ignore_index=True)
 
     combined = combine_calls(cell, pb, alpha=alpha, require_same_direction=require_same_direction)

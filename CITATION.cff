@@ -7,7 +7,7 @@ authors:
     given-names: "Bence"
 repository-code: "https://github.com/Pahi95/duet"
 license: MIT
-version: 1.0.1
+version: 1.1.0
 doi: 10.5281/zenodo.22801244
 date-released: 2026-09-16
 identifiers:

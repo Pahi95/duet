@@ -19,7 +19,7 @@ cd$donor <- factor(cd$donor)
 dds <- DESeqDataSetFromMatrix(as.matrix(round(cts)), colData = cd, design = as.formula(a[3]))
 dds <- DESeq(dds, quiet = TRUE)
 res <- results(dds, contrast = c("condition", a[5], a[4]))      # default independent filtering + Cook's
-out <- data.frame(gene = rownames(res), log2FC = res$log2FoldChange, stat = res$stat,
+out <- data.frame(gene = rownames(res), baseMean = res$baseMean, log2FC = res$log2FoldChange, stat = res$stat,
                   pvalue = res$pvalue, padj = res$padj)
 write.csv(out, a[6], row.names = FALSE)
 cat(sprintf("[R-DESeq2] %d genes, %d samples, design %s, DESeq2 %s\n", nrow(out), ncol(cts), a[3],
