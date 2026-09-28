@@ -234,16 +234,20 @@ class ResumeStore:
             except KeyboardInterrupt:
                 # Also stop descendants such as Rscript's R process. The next
                 # launcher must not race a surviving child writing the same files.
-                import psutil
                 try:
-                    tree = psutil.Process(child.pid).children(recursive=True)
-                    for process in reversed(tree):
-                        try:
-                            process.kill()
-                        except psutil.NoSuchProcess:
-                            pass
-                except psutil.NoSuchProcess:
-                    pass
+                    import psutil                               # optional dependency
+                except ImportError:
+                    psutil = None
+                if psutil is not None:
+                    try:
+                        tree = psutil.Process(child.pid).children(recursive=True)
+                        for process in reversed(tree):
+                            try:
+                                process.kill()
+                            except psutil.NoSuchProcess:
+                                pass
+                    except psutil.NoSuchProcess:
+                        pass
                 child.kill()
                 child.wait()
                 raise
@@ -263,24 +267,43 @@ class ResumeStore:
 
 @contextmanager
 def execution_lock(root):
-    """OS lock releases automatically even if the process is killed."""
-    import msvcrt
+    """OS lock releases automatically even if the process is killed (msvcrt on Windows, flock elsewhere)."""
+    if os.name == "nt":
+        import msvcrt
+
+        def lock(stream):
+            stream.seek(0)
+            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+
+        def unlock(stream):
+            stream.seek(0)
+            msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+
+        def lock(stream):
+            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+        def unlock(stream):
+            fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
     directory = Path(root) / "_progress"
     directory.mkdir(parents=True, exist_ok=True)
     with (directory / "run.lock").open("a+b") as stream:
         if not stream.seek(0, 2):
             stream.write(b"0")
             stream.flush()
-        stream.seek(0)
         try:
-            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+            lock(stream)
         except OSError:
             raise RuntimeError("another pancreas analysis runner is already active") from None
         try:
             # The old runner predates the lock. Detect it too, when its command
-            # line is accessible (same-user processes on the desktop).
-            import psutil
-            for process in psutil.process_iter():
+            # line is accessible (same-user processes on the desktop); needs psutil.
+            try:
+                import psutil                                   # optional dependency
+            except ImportError:
+                psutil = None
+            for process in (psutil.process_iter() if psutil is not None else []):
                 if process.pid == os.getpid():
                     continue
                 try:
@@ -293,5 +316,4 @@ def execution_lock(root):
                     continue
             yield
         finally:
-            stream.seek(0)
-            msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+            unlock(stream)

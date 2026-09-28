@@ -5,12 +5,19 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import nullcontext
+from importlib.util import find_spec
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from pancreas_resume import (CELLTYPES, ResumeStore, atomic_json, execution_lock,
                              outputs, validate_outputs)
+
+
+def patch_psutil(target, **kwargs):
+    """psutil is an optional dependency: patch it only where it is installed."""
+    return patch(target, **kwargs) if find_spec("psutil") else nullcontext()
 
 
 def csv_file(path, rows):
@@ -66,7 +73,7 @@ class ResumeTests(unittest.TestCase):
     def test_interrupted_process_is_retried_and_child_is_stopped(self):
         child = Mock(pid=123456, wait=Mock(side_effect=[KeyboardInterrupt, 0]))
         with patch("pancreas_resume.subprocess.Popen", return_value=child), \
-                patch("psutil.Process", return_value=Mock(children=Mock(return_value=[]))):
+                patch_psutil("psutil.Process", return_value=Mock(children=Mock(return_value=[]))):
             with self.assertRaises(KeyboardInterrupt):
                 self.store.run_step("de", "config", self.command, self.root, {})
         child.kill.assert_called_once()
@@ -138,7 +145,7 @@ class ResumeTests(unittest.TestCase):
         self.assertEqual(json.loads(path.read_text())["state"], "complete")
 
     def test_second_runner_cannot_acquire_active_lock(self):
-        with patch("psutil.process_iter", return_value=[]):
+        with patch_psutil("psutil.process_iter", return_value=[]):
             with execution_lock(self.root):
                 with self.assertRaisesRegex(RuntimeError, "already active"):
                     with execution_lock(self.root):
