@@ -305,7 +305,9 @@ def main():
                              if engine == "mast" else "", design=a.design, threads=a.threads, run=run_no,
                              warmup=is_warm, cpu_load_before=load, contaminated=contaminated,
                              shared_machine=a.shared, cpus=a.cpus, started=t0, **r))
-        pd.DataFrame(rows).to_csv(out, index=False)        # after every run: nothing lost on a stop
+        pending_csv = out.with_name(out.name + ".part")
+        pd.DataFrame(rows).to_csv(pending_csv, index=False)
+        pending_csv.replace(out)                         # atomic snapshot after every completed run
         print(f"[bench] {name:22s} {engine:5s} run {run_no} {'(warm-up) ' if is_warm else ''}"
               f"{tot['elapsed_s']:8.1f}s wall {tot['cpu_s']:8.1f}s CPU peak {tot['peak_rss_mb']:8.0f} MB "
               f"(OS peak {tot['os_peak_wset_mb']:.0f} MB) rc={tot['returncode']} "

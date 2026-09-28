@@ -94,8 +94,8 @@ def duet(A, ref, test):
                          "retained": d["neglog10p"]})
 
 
-def mast_from_file(dataset):
-    f = HERE / "results" / "mast_components" / dataset / "mast_bayesglm_ebTRUE.csv"
+def mast_from_file(dataset, mast_dir: Path):
+    f = mast_dir / dataset / "mast_bayesglm_ebTRUE.csv"
     if not f.is_file():
         raise FileNotFoundError(f"{f} -- run mast_settings_check.py first")
     from duet.core import _neglog10_chi2_sf
@@ -143,10 +143,20 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--perms", type=int, default=5)
     ap.add_argument("--diffxpy-perms", type=int, default=3)
+    ap.add_argument("--datasets", default="kang,pancreas")
+    ap.add_argument("--mast-dir", type=Path, default=HERE / "results" / "mast_components")
+    ap.add_argument("--outdir", type=Path, default=HERE / "evidence")
     a = ap.parse_args()
+    wanted = set(a.datasets.split(","))
+    unknown = wanted - {name for name, _ in CASES}
+    if unknown:
+        ap.error(f"unknown datasets: {sorted(unknown)}")
+    a.outdir.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(0)
     pkg_rows, top_rows = [], []
     for name, ct in CASES:
+        if name not in wanted:
+            continue
         cfg = DATASETS[name]
         ref, test = cfg["ref"], TEST[name]
         A0 = _runtime.load_rows(cfg["h5ad"], lambda o: (o["celltype"].astype(str) == ct).to_numpy())
@@ -166,7 +176,7 @@ def main():
                 d["input_rank"] = pd.Index(A.var_names.astype(str)).get_indexer(d["gene"])
                 results[pkg].append(d)
                 print(f"[{name}] {pkg}: order {len(results[pkg])}/{n_orders} done", flush=True)
-        m = mast_from_file(name)
+        m = mast_from_file(name, a.mast_dir)
         m = m[m.gene.isin(genes)]
         results["MAST"] = []
         for o in orders:
@@ -205,8 +215,8 @@ def main():
                                          topk_by_stat(d, k) == topk_by_stat(runs[0], k) for d in runs)))
         if name == "kang":                                     # MAST: one real rerun on a permuted gene order
             pkg_rows.append(mast_permuted_rerun(A0, [genes[i] for i in orders[1]], m, ref, test))
-    pd.DataFrame(pkg_rows).to_csv(HERE / "evidence" / "underflow_by_package.csv", index=False)
-    pd.DataFrame(top_rows).to_csv(HERE / "evidence" / "underflow_topk.csv", index=False)
+    pd.DataFrame(pkg_rows).to_csv(a.outdir / "underflow_by_package.csv", index=False)
+    pd.DataFrame(top_rows).to_csv(a.outdir / "underflow_topk.csv", index=False)
     pd.set_option("display.width", 220)
     print(pd.DataFrame(pkg_rows).to_string(index=False))
     print(pd.DataFrame(top_rows).to_string(index=False))

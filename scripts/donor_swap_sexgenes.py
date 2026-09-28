@@ -118,7 +118,7 @@ def run_celltype(name: str, celltype: str, outdir: str) -> str:
                              arm_b=";".join(arm_b), n_cells_a=n_a, n_cells_b=n_b, method=m,
                              n_tested=len(genes), n_tested_sexchrom=int(is_sex.sum()),
                              n_discoveries=int(allg[m].sum()), n_discoveries_sexchrom=len(sex_disc),
-                             sexchrom_discoveries=";".join(sex_disc[:50]),
+                             sexchrom_discoveries=";".join(sex_disc),
                              n_tested_autosomal=int((~is_sex).sum()),
                              n_discoveries_autosomal=int(auto[m].sum()),
                              rejection_pct=100 * allg[m].sum() / max(len(genes), 1),

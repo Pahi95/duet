@@ -122,11 +122,19 @@ def compare(duet: pd.DataFrame, mast: pd.DataFrame) -> list[dict]:
 
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--datasets", default="kang,crowell,pancreas",
+                    help="comma-separated dataset names to check")
     ap.add_argument("--outdir", default=str(HERE / "results" / "mast_components"))
     ap.add_argument("--out", default=str(HERE / "evidence" / "mast_component_agreement.csv"))
     a = ap.parse_args()
     rows = []
+    wanted = set(a.datasets.split(","))
+    unknown = wanted - {name for name, _ in CASES}
+    if unknown:
+        ap.error(f"unknown datasets: {sorted(unknown)}")
     for name, ct in CASES:
+        if name not in wanted:
+            continue
         cfg = DATASETS[name]
         ref, test = cfg["ref"], TEST[name]
         A = _runtime.load_rows(cfg["h5ad"], lambda o: (o["celltype"].astype(str) == ct).to_numpy(), layers=())

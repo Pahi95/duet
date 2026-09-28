@@ -58,13 +58,53 @@ DATASETS = {
                  celltypes=["B cells", "CD14+ Monocytes", "CD4 T cells"]),
     "crowell": dict(h5ad=INPUTS / "data" / "crowell_4vs4.h5ad", donor="SourceFile", cond="Sample", ref="Vehicle",
                     celltypes=["Astrocytes", "Excit. Neuron", "Inhib. Neuron"]),
-    "pancreas": dict(h5ad=INPUTS / "PancreasCorrected.h5ad", donor="donor", cond="Sample", ref="Reference",
-                     celltypes=["Ductal cell", "Endothelial cell", "Stellate cell"]),
+    "pancreas": dict(
+        h5ad=Path(os.environ.get("DUET_PANCREAS_H5AD", INPUTS / "PancreasCorrected.h5ad")),
+        donor=os.environ.get("DUET_PANCREAS_DONOR_COL", "donor"), cond="Sample", ref="Reference",
+        celltypes=os.environ.get(
+            "DUET_PANCREAS_CELLTYPES", "Ductal cell,Endothelial cell,Stellate cell"
+        ).split(",")),
 }
 
 
+def n_unique_splits(n: int) -> int:
+    """Number of unique balanced splits of n donors (mirror images counted once)."""
+    from math import comb
+    return comb(n, n // 2) // 2 if n % 2 == 0 else n * comb(n - 1, (n - 1) // 2) // 2
+
+
+def random_splits(donors: list[str], n_splits: int, seed: int) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
+    """n_splits distinct balanced splits drawn at random (odd n: one random donor left out).
+
+    Used when enumerating every split is infeasible (e.g. 20 donors -> 92,378 splits). Each
+    split is stored in the same canonical form as unique_splits (arms sorted, the first donor
+    of the pool in arm A), so a split and its mirror image are never both drawn.
+    """
+    donors = sorted(donors)
+    rng = np.random.default_rng(seed)
+    k = len(donors) // 2
+    seen, splits = set(), []
+    while len(splits) < n_splits:
+        perm = [donors[i] for i in rng.permutation(len(donors))]
+        pool = sorted(perm[:2 * k])
+        a, b = tuple(sorted(perm[:k])), tuple(sorted(perm[k:2 * k]))
+        if pool[0] not in a:
+            a, b = b, a
+        if (a, b) not in seen:
+            seen.add((a, b))
+            splits.append((a, b))
+    return splits
+
+
 def unique_splits(donors: list[str]) -> list[tuple[tuple[str, ...], tuple[str, ...]]]:
-    """All unique balanced two-arm splits; odd n leaves one donor out per split."""
+    """All unique balanced two-arm splits; odd n leaves one donor out per split.
+
+    If DUET_MAX_SPLITS is set and the donors allow more unique splits than that, a random
+    sample of DUET_MAX_SPLITS distinct splits is returned instead (seed DUET_SPLIT_SEED, 0).
+    """
+    max_splits = int(os.environ.get("DUET_MAX_SPLITS", "0") or 0)
+    if max_splits and n_unique_splits(len(donors)) > max_splits:
+        return random_splits(donors, max_splits, int(os.environ.get("DUET_SPLIT_SEED", "0")))
     donors = sorted(donors)
     pools = [donors] if len(donors) % 2 == 0 else [[d for d in donors if d != out] for out in donors]
     splits = []

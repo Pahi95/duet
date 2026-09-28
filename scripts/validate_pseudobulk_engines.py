@@ -5,7 +5,9 @@ validate_pseudobulk_engines.py -- is DUET's pseudobulk arm right?
 Per dataset and cell type, on the raw integer UMI counts:
   1. the shipped wrapper, duet.pseudobulk.run_pseudobulk;
   2. an independent path -- counts summed with a pandas groupby over
-     (donor, condition), then PyDESeq2 called directly;
+     (donor, condition), then PyDESeq2 called directly on the samples in the
+     wrapper's sorted order (PyDESeq2's fit depends on sample order; the fit in
+     order of first appearance is compared separately);
   3. R DESeq2 (scripts/pseudobulk_deseq2.R) on the matrix from step 2.
 
 The design is chosen from the data, not assumed: ~donor + condition only when every
@@ -155,6 +157,10 @@ def main():
                                min_gene_counts=MIN_COUNTS, paired=paired, n_cpus=1)
             w = w[w.pb_tested].set_index("gene")
             w = w.rename(columns={"pb_log2FC": "log2FC", "pb_pvalue": "pvalue", "pb_padj": "padj"})
+            # PyDESeq2 depends on the sample order (also in ~condition fits), so the direct fit
+            # uses the wrapper's sorted order; the effect of the order itself is reported apart.
+            d_first, _ = pydeseq2_direct(pb_i, meta_i, design, ref, test)
+            pb_i, meta_i = pb_i.loc[pb_w.index], meta_i.loc[pb_w.index]
             d, counts_f = pydeseq2_direct(pb_i, meta_i, design, ref, test)
             r = r_deseq2(counts_f, meta_i, design, ref, test)
             row = dict(dataset=name, celltype=ct, design=design, n_samples=len(meta_i),
@@ -162,6 +168,12 @@ def main():
                        aggregation_identical=same_counts)
             row.update(compare(w, d, "wrapper_vs_pydeseq2"))
             row.update(compare(d, r, "pydeseq2_vs_R"))
+            row.update(compare(d, d_first, "pydeseq2_sorted_vs_first_appearance_order"))
+            row.update(compare(d_first, r, "pydeseq2_first_appearance_vs_R"))
+            changed = sorted(set(d.index[d.padj < 0.05]) ^ set(d_first.index[d_first.padj < 0.05]))
+            row["order_changed_calls"] = ";".join(
+                f"{g}(sorted padj {d.padj.get(g, np.nan):.3g}, first-appearance {d_first.padj.get(g, np.nan):.3g}, "
+                f"R padj {r.padj.get(g, np.nan):.3g})" for g in changed[:20])
             row["wrapper_identical_within_1e-8"] = (row["wrapper_vs_pydeseq2_log2fc_max_abs_diff"] <= 1e-8
                                                     and row["wrapper_vs_pydeseq2_nlp_max_abs_diff"] <= 1e-8)
             rows.append(row)

@@ -74,8 +74,10 @@ path = run_duet_pseudobulk(adata, output_dir="results", celltype_col="celltype",
 
 Set `paired=True` only when every donor contributes both conditions; pairing is not detected
 automatically. For paired designs pass `engine="R"` as well: it runs R DESeq2 (needs `Rscript` with
-DESeq2; point `rscript=` or the `RSCRIPT` environment variable at it). PyDESeq2's paired fit depends
-on the order of the samples; R DESeq2's does not (`check_pydeseq2_order.py`). The `call` column is:
+DESeq2; point `rscript=` or the `RSCRIPT` environment variable at it). PyDESeq2's fit depends on the
+order of the samples, mostly in paired designs but occasionally also for low-count genes in unpaired ones;
+R DESeq2's does not (`check_pydeseq2_order.py`, `check_pydeseq2_order_unpaired.py`). DUET passes the
+samples in a fixed sorted order. The `call` column is:
 
 | call | meaning |
 |---|---|
@@ -122,8 +124,24 @@ lists every step and its command.
 - **Kang et al. 2018** (PBMCs, IFN-β): built by `build_kang_h5ad.py`.
 - **Crowell et al. 2020** (mouse cortex, LPS): built by `build_crowell_h5ad.py` (+ `get_crowell.R`,
   muscData).
-- **Pancreas analysis input** (17,093 ductal, endothelial and stellate cells from PDAC and HPAP islet
-  preparations): https://doi.org/10.5281/zenodo.22801671, saved as `PancreasCorrected.h5ad`.
+- **Pancreas analysis input** (47,187 ductal, endothelial and stellate cells from PDAC and a non-tumor
+  reference of organ-donor pancreas, tumor-adjacent pancreas and HPAP islet preparations), version 2.0:
+  https://doi.org/10.5281/zenodo.23013760. The file list of the integrated dataset, with GEO series,
+  samples, donors and libraries, is part of the record. Repeated sequencing runs of one library are
+  counted once, each cell from the run with the most UMIs. Version 1.0
+  (https://doi.org/10.5281/zenodo.22801671) summed the repeated HPAP runs, which counted molecules sequenced
+  in more than one run more than once (`hpap_run_overlap.py`); it is superseded.
+
+The pancreas analyses read the integrated object named by `DUET_PANCREAS_SOURCE` (obs: `Sample`,
+`celltype`, `DonorID`, `SourceFile`, `total_counts`, `n_genes_by_counts`; `layers["counts"]`). The Zenodo
+file holds the same cells, counts and labels, with `donor` and `source_file` in place of `DonorID` and
+`SourceFile`. `prepare_pancreas_20260925.py` and `prepare_pooled_pancreas_20260925.py` write the benchmark
+inputs, and `pancreas_20260925.py` runs every pancreas step (differential expression, MAST, null, pseudobulk
+check, MAST components, underflow, benchmarks); `bench_pancreas_methods.py` times diffxpy, PyDESeq2 and
+Wilcoxon. For the donor partitions and the sample-order check, set `DUET_PANCREAS_H5AD` (the object),
+`DUET_PANCREAS_DONOR_COL=DonorID` and `DUET_MAX_SPLITS=15`: with 16–21 reference donors per cell type,
+15 distinct balanced partitions are drawn at random (`DUET_SPLIT_SEED`, default 0) instead of enumerating
+all of them.
 
 The comparisons also need R with MAST, DESeq2, muscat, edgeR, limma, lme4 and GLIMES. Results are
 written to `results/`, which is not versioned.
@@ -139,6 +157,8 @@ written to `results/`, which is not versioned.
 | Donor-aware models | `donor_aware_methods.py`, `donor_aware_run.R`, `install_glimes.R`, `evaluate_sim_replicates.py`, `evaluate_sim.py` |
 | Pseudobulk implementation | `validate_pseudobulk_engines.py` (+ `pseudobulk_deseq2.R`) |
 | Pseudobulk sample-order check | `check_pydeseq2_order.py`, `check_pydeseq2_order_unpaired.py` |
+| Pancreas input and benchmarks | `prepare_pancreas_20260925.py`, `prepare_pooled_pancreas_20260925.py`, `pancreas_20260925.py` (+ `pancreas_resume.py`), `bench_pancreas_methods.py`, `bench_pancreas_methods_run.py` |
+| Repeated HPAP runs (why version 1.0 was replaced) | `hpap_run_overlap.py` |
 
 ## Citation
 
@@ -146,7 +166,8 @@ If you use DUET, please cite the software. The manuscript citation will be added
 
 - Software, all versions: https://doi.org/10.5281/zenodo.22801244
 - DUET 1.0.0, the version used in the manuscript: https://doi.org/10.5281/zenodo.22801245
-- Pancreas analysis input: https://doi.org/10.5281/zenodo.22801671
+- Pancreas analysis input, version 2.0: https://doi.org/10.5281/zenodo.23013760 (all versions:
+  https://doi.org/10.5281/zenodo.22801670)
 
 Citation metadata: [CITATION.cff](CITATION.cff). The name is unrelated to the DUET protein-stability
 server (Pires et al., Nucleic Acids Res 2014).
