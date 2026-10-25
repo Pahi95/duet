@@ -23,6 +23,9 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.23020154
     description: DUET 1.1.1
+  - type: doi
+    value: 10.5281/zenodo.23649230
+    description: DUET 1.2.0
 keywords:
   - single-cell RNA-seq
   - differential expression

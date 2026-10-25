@@ -169,7 +169,9 @@ written to `results/`, which is not versioned.
 If you use DUET, please cite the software. The manuscript citation will be added on publication.
 
 - Software, all versions: https://doi.org/10.5281/zenodo.22801244
-- DUET 1.1.1, the archived code and analysis scripts of the manuscript: https://doi.org/10.5281/zenodo.23020154
+- DUET 1.2.0, the archived code and analysis scripts of the manuscript, including the revision checks and the
+  `use_t` option: https://doi.org/10.5281/zenodo.23649230
+- DUET 1.1.1: https://doi.org/10.5281/zenodo.23020154
 - DUET 1.1.0 (pancreas analyses, sample-order checks): https://doi.org/10.5281/zenodo.22877336; DUET 1.0.0 (the other
   analyses): https://doi.org/10.5281/zenodo.22801245
 - Pancreas analysis input, version 2.0: https://doi.org/10.5281/zenodo.23013760 (all versions:
