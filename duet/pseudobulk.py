@@ -36,6 +36,13 @@ factor levels (its gene-wise dispersion optimiser stops at order-dependent point
 where the likelihood is flat), whereas R DESeq2 returns the same result for any
 order. Samples are always passed in one canonical order, so either engine is
 reproducible run to run.
+
+DESeq2's Wald test refers its statistic to a normal distribution. With a few
+donors per group that is anti-conservative: in negative-control donor partitions
+and negative-binomial global nulls it produced at least one discovery in a large
+share of runs. ``engine="R", use_t=True`` uses a t reference with samples -
+coefficients degrees of freedom instead, which removed nearly all of them, at the
+cost of power at the nominal threshold.
 """
 from __future__ import annotations
 
@@ -63,14 +70,15 @@ CALL_NS = "ns"
 CALL_UNTESTED = "not_tested"
 
 
-def _neglog10_from_wald(pvalue, stat):
+def _neglog10_from_wald(pvalue, stat, df=None):
     """-log10 p that survives the float64 floor, recovered from the Wald z.
 
     A p-value below ~1e-308 is stored as exactly 0.0, which ties every such gene
     and destroys the ranking. The two-sided normal tail has a closed form, so the
     value can be recovered from the statistic whenever the p-value has
     underflowed. This mirrors what the hurdle path does with the chi-squared
-    tail.
+    tail. With `df`, the statistic was referred to a t distribution with that
+    many degrees of freedom, and its tail is used instead.
     """
     p = np.asarray(pvalue, dtype=float)
     z = np.asarray(stat, dtype=float)
@@ -80,7 +88,11 @@ def _neglog10_from_wald(pvalue, stat):
     under = ok & (p <= 0.0) & np.isfinite(z)
     if under.any():
         # log(2 * sf(|z|)) in log space, then to base 10
-        lg = math.log(2.0) + norm.logsf(np.abs(z[under]))
+        if df is None:
+            lg = math.log(2.0) + norm.logsf(np.abs(z[under]))
+        else:
+            from .core import _log_two_sided_t_sf
+            lg = _log_two_sided_t_sf(z[under], df)
         out[under] = -lg / math.log(10.0)
     return out
 
@@ -159,6 +171,8 @@ def aggregate_pseudobulk(
 
 # R DESeq2 on the matrix written by _deseq2_r: default DESeq() and results(), i.e.
 # independent filtering and Cook's cut-off as in R. Levels are set explicitly.
+# a[7] = "TRUE" refers the Wald statistic to a t distribution (DESeq(useT = TRUE),
+# df = samples - coefficients) instead of the normal.
 _R_DESEQ2 = r"""
 suppressPackageStartupMessages(library(DESeq2))
 a <- commandArgs(trailingOnly = TRUE)
@@ -168,7 +182,7 @@ stopifnot(identical(rownames(cd), colnames(cts)))
 cd$condition <- factor(cd$condition, levels = c(a[4], a[5]))
 cd$donor <- factor(cd$donor, levels = sort(unique(cd$donor)))
 dds <- DESeqDataSetFromMatrix(as.matrix(round(cts)), colData = cd, design = as.formula(a[3]))
-dds <- DESeq(dds, quiet = TRUE)
+dds <- DESeq(dds, quiet = TRUE, useT = isTRUE(as.logical(a[7])))
 res <- results(dds, contrast = c("condition", a[5], a[4]))
 write.csv(data.frame(gene = rownames(res), log2FoldChange = res$log2FoldChange, stat = res$stat,
                      pvalue = res$pvalue, padj = res$padj), a[6], row.names = FALSE)
@@ -184,8 +198,10 @@ def _find_rscript(rscript=None):
     return exe
 
 
-def _deseq2_r(pb, meta, design, ref_label, test_label, rscript=None):
-    """R DESeq2 on a pseudobulk matrix; returns the columns PyDESeq2's results_df has."""
+def _deseq2_r(pb, meta, design, ref_label, test_label, rscript=None, use_t=False):
+    """R DESeq2 on a pseudobulk matrix; returns the columns PyDESeq2's results_df has.
+
+    `use_t` runs the Wald test against a t distribution (DESeq2's useT = TRUE)."""
     exe = _find_rscript(rscript)
     with tempfile.TemporaryDirectory() as tmp:
         t = Path(tmp)
@@ -193,7 +209,8 @@ def _deseq2_r(pb, meta, design, ref_label, test_label, rscript=None):
         pb.T.to_csv(t / "counts.csv")
         meta[["donor", "condition"]].astype(str).to_csv(t / "coldata.csv")
         r = subprocess.run([exe, str(t / "deseq2.R"), str(t / "counts.csv"), str(t / "coldata.csv"),
-                            design, str(ref_label), str(test_label), str(t / "out.csv")],
+                            design, str(ref_label), str(test_label), str(t / "out.csv"),
+                            "TRUE" if use_t else "FALSE"],
                            capture_output=True, text=True)
         if r.returncode != 0:
             raise RuntimeError(f"R DESeq2 failed:\n{r.stderr[-1500:]}")
@@ -205,6 +222,13 @@ def _deseq2_r(pb, meta, design, ref_label, test_label, rscript=None):
     if list(out["gene"]) != [str(g) for g in pb.columns]:
         raise RuntimeError("R DESeq2 returned genes in a different order or under different names")
     return out.set_index("gene")
+
+
+def _check_engine(engine, use_t):
+    if engine not in ("pydeseq2", "R"):
+        raise ValueError(f"engine must be 'pydeseq2' or 'R', not {engine!r}")
+    if use_t and engine != "R":
+        raise ValueError("use_t=True needs engine='R': PyDESeq2's Wald test has no t reference")
 
 
 def run_pseudobulk(
@@ -223,6 +247,7 @@ def run_pseudobulk(
     n_cpus: int | None = None,
     engine: str = "pydeseq2",
     rscript: str | None = None,
+    use_t: bool = False,
 ):
     """DESeq2 on pseudobulk profiles. One row per gene.
 
@@ -235,11 +260,18 @@ def run_pseudobulk(
     Use ``"R"`` for paired designs: PyDESeq2's paired fit is sensitive to sample
     order, R DESeq2's is not.
 
+    `use_t=True` (``engine="R"`` only) refers the Wald statistic to a t
+    distribution with samples - coefficients degrees of freedom instead of the
+    normal. DESeq2's default normal reference is anti-conservative with few
+    donors: in negative-binomial global nulls with four donors per group it gave
+    at least one BH discovery in 5-10 of 20 replicates, and none with the t
+    reference. The t reference costs power at the nominal threshold. PyDESeq2
+    has no t reference.
+
     `n_cpus` is passed to PyDESeq2, which otherwise starts one worker process per
     CPU; set it to 1 when this runs inside parallel jobs.
     """
-    if engine not in ("pydeseq2", "R"):
-        raise ValueError(f"engine must be 'pydeseq2' or 'R', not {engine!r}")
+    _check_engine(engine, use_t)
     if engine == "pydeseq2":
         try:
             from pydeseq2.dds import DeseqDataSet
@@ -285,8 +317,13 @@ def run_pseudobulk(
             "pseudobulk sample comes from a different donor; the donor term "
             "would be collinear with the condition term.")
 
+    # residual df of the t reference: samples minus coefficients, as DESeq2's useT default
+    n_coef = meta["donor"].nunique() + 1 if paired else 2
+    df_t = len(meta) - n_coef if use_t else None
+
     if engine == "R":
-        r = _deseq2_r(pb, meta, design, ref_label, test_label, rscript=rscript).reset_index()
+        r = _deseq2_r(pb, meta, design, ref_label, test_label, rscript=rscript,
+                      use_t=use_t).reset_index()
     else:
         if paired:
             warnings.warn(
@@ -310,7 +347,7 @@ def run_pseudobulk(
         "pb_pvalue": r["pvalue"].astype(float),
         "pb_padj": r["padj"].astype(float),
         "pb_neglog10p": _neglog10_from_wald(r["pvalue"].astype(float),
-                                            r["stat"].astype(float)),
+                                            r["stat"].astype(float), df=df_t),
         "pb_stat": r["stat"].astype(float),
         "pb_tested": True,
         "pb_skip_reason": "",
@@ -388,6 +425,7 @@ def run_duet_pseudobulk(
     n_cpus: int | None = None,
     engine: str = "pydeseq2",
     rscript: str | None = None,
+    use_t: bool = False,
     output_name: str = "duet_pseudobulk.csv",
     **duet_kwargs,
 ):
@@ -400,12 +438,16 @@ def run_duet_pseudobulk(
     `donor_col` is the new requirement and the reason this could not be done
     before: DUET's own API has no notion of who a cell came from -- its
     `sample_col` is the condition column -- so it had no way to aggregate.
+
+    `engine`, `rscript` and `use_t` are passed to :func:`run_pseudobulk`; with few
+    donors per group, ``engine="R", use_t=True`` is the calibrated choice.
     """
     import os
     from pathlib import Path
 
     from .core import run_duet
 
+    _check_engine(engine, use_t)        # before the hurdle runs, not after
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -439,7 +481,7 @@ def run_duet_pseudobulk(
             min_cells_per_donor=min_cells_per_donor,
             min_donors_per_group=min_donors_per_group,
             min_gene_counts=min_gene_counts, paired=paired, n_cpus=n_cpus,
-            engine=engine, rscript=rscript))
+            engine=engine, rscript=rscript, use_t=use_t))
     pb = pd.concat(frames, ignore_index=True)
 
     combined = combine_calls(cell, pb, alpha=alpha, require_same_direction=require_same_direction)

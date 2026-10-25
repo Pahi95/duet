@@ -563,3 +563,60 @@ def test_gene_order_and_awkward_gene_names_stay_aligned():
         r2 = run_pseudobulk(b, engine="R", rscript=exe, **kw).set_index("gene").loc[r0.index]
         assert r2["pb_log2FC"].notna().loc["NA"]
         np.testing.assert_allclose(r0["pb_log2FC"], r2["pb_log2FC"], rtol=0.05, atol=0.05)
+
+
+def test_use_t_requires_the_r_engine(tmp_path):
+    """PyDESeq2 has no t reference, so use_t=True must fail loudly with it -- and in
+    the wrapper before the cell-level arm has run, not after."""
+    from duet import run_pseudobulk, run_duet_pseudobulk
+    a = _paired_toy_noisy()
+    kw = dict(donor_col="donor", condition_col="condition", ref_label="ctrl", test_label="stim")
+    with pytest.raises(ValueError, match="use_t"):
+        run_pseudobulk(a, use_t=True, **kw)
+    with pytest.raises(ValueError, match="use_t"):
+        run_duet_pseudobulk(a, output_dir=str(tmp_path / "out"), use_t=True, **kw)
+    assert not (tmp_path / "out").exists()
+
+
+def test_neglog10_from_wald_uses_the_t_tail_with_df():
+    """An underflowed p-value is recovered from the statistic with the tail of the
+    reference distribution that produced it."""
+    from scipy.stats import norm, t
+    from duet.pseudobulk import _neglog10_from_wald
+    p, z = np.array([0.0, 0.0, 0.2]), np.array([45.0, 1e60, 1.28])
+    normal = _neglog10_from_wald(p, z)
+    tt = _neglog10_from_wald(p, z, df=6)
+    assert normal[0] == pytest.approx(-(math.log(2) + norm.logsf(45.0)) / math.log(10))
+    assert tt[0] == pytest.approx(-(math.log(2) + t.logsf(45.0, 6)) / math.log(10))
+    assert tt[0] < normal[0]                              # the t tail is heavier
+    assert np.isfinite(tt[1]) and tt[1] > tt[0]           # far past the float64 floor, still ranked
+    assert normal[2] == tt[2] == pytest.approx(-math.log10(0.2))   # finite p is kept as is
+
+
+@pytest.mark.parametrize("paired", [False, True])
+def test_r_engine_use_t_refers_the_wald_statistic_to_t(paired):
+    """use_t changes only the reference distribution: same fold changes and Wald
+    statistics, p = 2 * t.sf(|stat|, samples - coefficients), never below the normal p."""
+    import warnings
+    from scipy.stats import t
+    from duet import run_pseudobulk
+    exe = _rscript_with_deseq2()
+    if exe is None:
+        pytest.skip("Rscript with DESeq2 not available")
+    a = _paired_toy_noisy()
+    if not paired:                         # each (donor, condition) becomes its own donor
+        a.obs["donor"] = a.obs["donor"].astype(str) + "_" + a.obs["condition"].astype(str)
+    kw = dict(donor_col="donor", condition_col="condition", ref_label="ctrl", test_label="stim",
+              engine="R", rscript=exe, paired=paired)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        z = run_pseudobulk(a, **kw).set_index("gene")
+        tt = run_pseudobulk(a, use_t=True, **kw).set_index("gene").loc[z.index]
+    ok = z.pb_tested & z.pb_pvalue.notna()
+    n_samples = 12
+    df = n_samples - (6 + 1 if paired else 2)
+    np.testing.assert_allclose(tt.pb_log2FC[ok], z.pb_log2FC[ok], rtol=1e-8)
+    np.testing.assert_allclose(tt.pb_stat[ok], z.pb_stat[ok], rtol=1e-8)
+    np.testing.assert_allclose(tt.pb_pvalue[ok], 2 * t.sf(np.abs(z.pb_stat[ok]), df), rtol=1e-6)
+    assert (tt.pb_pvalue[ok] >= z.pb_pvalue[ok] - 1e-15).all()
+    assert (tt.pb_padj < 0.05).sum() <= (z.pb_padj < 0.05).sum()

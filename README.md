@@ -77,7 +77,11 @@ automatically. For paired designs pass `engine="R"` as well: it runs R DESeq2 (n
 DESeq2; point `rscript=` or the `RSCRIPT` environment variable at it). PyDESeq2's fit depends on the
 order of the samples, mostly in paired designs but occasionally also for low-count genes in unpaired ones;
 R DESeq2's does not (`check_pydeseq2_order.py`, `check_pydeseq2_order_unpaired.py`). DUET passes the
-samples in a fixed sorted order. The `call` column is:
+samples in a fixed sorted order. With few donors per group, also pass `use_t=True` (R engine only): DESeq2's
+Wald test then uses a t reference with samples − coefficients degrees of freedom instead of the normal one.
+The normal reference was anti-conservative in negative-control donor partitions and global-null
+simulations with four donors per group; the t reference removed nearly all of those discoveries, at the cost
+of power at the nominal threshold (`wald_t_check.py`, `simulate_batch_nb_wald_t.R`). The `call` column is:
 
 | call | meaning |
 |---|---|
